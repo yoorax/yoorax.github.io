@@ -1,0 +1,171 @@
+/* ===================================================
+   Education Page Styles
+   =================================================== */
+
+.education-page {
+  background: var(--bg-primary);
+}
+
+/* ----- Group Title ----- */
+.edu-group {
+  margin-bottom: var(--space-3xl);
+}
+
+.edu-group-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: var(--space-xl);
+  padding-bottom: var(--space-sm);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.edu-group-icon {
+  font-size: 1.4rem;
+}
+
+/* ----- Education Cells ----- */
+.edu-cells {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.edu-cell {
+  animation: fadeInUp 0.5s ease forwards;
+}
+
+/* ----- Institution Info ----- */
+.edu-institution {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-sm) var(--space-xl);
+  padding: var(--space-lg);
+  background: var(--accent-dim);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-xl);
+}
+
+.edu-info-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.edu-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+}
+
+.edu-value {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.edu-value svg {
+  font-size: 0.8rem;
+  color: var(--accent);
+}
+
+/* ----- Section Headings ----- */
+.edu-section-heading {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: var(--space-md);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* ----- Description ----- */
+.edu-description {
+  margin-bottom: var(--space-xl);
+}
+
+.edu-description p {
+  font-size: 0.92rem;
+  line-height: 1.8;
+  color: var(--text-secondary);
+}
+
+/* ----- Skills ----- */
+.edu-skills {
+  margin-top: var(--space-md);
+}
+
+/* ----- Certification Cards ----- */
+.cert-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: var(--space-lg);
+}
+
+.cert-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  transition: all var(--transition-base);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.cert-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-accent);
+}
+
+.cert-header {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-md);
+}
+
+.cert-icon {
+  color: var(--accent);
+  font-size: 1.3rem;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.cert-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.3;
+  margin-bottom: 2px;
+}
+
+.cert-provider {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.cert-skills {
+  padding-top: var(--space-sm);
+  border-top: 1px solid var(--border-color);
+}
+
+/* ----- Responsive ----- */
+@media (max-width: 768px) {
+  .edu-institution {
+    grid-template-columns: 1fr;
+  }
+
+  .cert-grid {
+    grid-template-columns: 1fr;
+  }
+}
