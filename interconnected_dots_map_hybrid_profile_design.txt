@@ -1,0 +1,98 @@
+### 1. Project Overview: Interactive Hybrid Skill Map
+
+**Concept Summary**
+This component is a React-based, interactive force-directed graph designed to serve as the visual centerpiece of a professional portfolio. Instead of a traditional list of skills, the user's technical competencies are represented as a living, interconnected network of nodes (dots). The primary thematic goal is to visually demonstrate the bridge between Industrial Automation/Operational Technology (OT) and Data Engineering/Information Technology (IT). By utilizing physics-based rendering, the map will continuously drift in an ambient state, symbolizing a dynamic and evolving skill set. When a user interacts with the canvas, the nodes react physically, creating an engaging micro-interaction that highlights specific technologies ranging from mechanical design and robotics to data traceability and pipelines.
+
+**Core Interactions & Logic**
+* **Ambient Physics (Idle State):** The network exists in a continuous, slow-moving state of gravity and friction. Nodes gently drift and pull against each other without overlapping, connected by thin, low-opacity lines representing the relationships between different disciplines.
+* **Proximity & Hover Detection:** As the user's cursor enters the canvas, the engine detects proximity to the nearest node. 
+* **Hover States:** Upon hovering over a node, two things happen simultaneously:
+    * *Scale & Reveal:* The specific dot scales up by at least 1.5x, transitioning from a generic dot to a labeled node displaying the specific skill name (e.g., "ROS2", "Data Pipelines", "React", "Simulink").
+    * *Repulsion Force:* The enlarged node exerts a localized repulsive force, gently pushing neighboring nodes away to ensure the skill text remains readable and unobstructed.
+
+**Strategic Clustering & Layout**
+* **Directional Gravity:** The physics simulation will be programmed with directional gravity to naturally cluster related skills.
+* **Left Hemisphere:** Hardware, Mechanics, and Automation (e.g., 3D Printing, PLCs, Kinematics).
+* **Right Hemisphere:** Software, Analytics, and Data (e.g., Python, SQL, Power BI, Traceability).
+* **Center Hub:** Bridging technologies holding the network together (e.g., Industry 4.0, IIoT, Predictive Maintenance).
+
+**Technical Environment**
+* **Framework:** The component must be built as a modular functional React component.
+* **Rendering Engine:** Because DOM manipulation of dozens of moving elements causes performance bottlenecks, the rendering engine must leverage HTML5 `<canvas>` (via libraries like d3-force or react-force-graph-2d) to ensure a smooth 60 FPS experience, optimized for a static GitHub Pages deployment.
+
+---
+
+### 2. Information Architecture: Taxonomy of Skills
+
+The data structure is divided into distinct classifications, outlining the "Mother Category," the child "Concepts," and the subsequent nested "Technologies".
+
+**Category 1: Industry 4.0 (Main Centred Hub)**
+* **Concepts:** Digital Transformation, Smart Manufacturing, Cyber-Physical Systems, Industrial Digitalization, Real-Time Monitoring & Traceability, Predictive Maintenance, Data-Driven Operations, End-to-End System Integration.
+
+**Category 2: Data Systems Engineering**
+* **Concepts & Technologies:** * Data Analysis Python (Pandas, Numpy, Matplotlib, Seaborn).
+    * Data Visualization (Power BI, Tableau).
+    * Database Management (PgSQL, T-SQL, SSMS, Postgres, SQL server).
+    * Data Pipelines Engineering (ETL/ELT Pipelines, SQL Triggers & Stored Procedures).
+    * ETL Processes.
+    * Statistical Analysis (ANOVA, Pearson, T-Tests, Z-Tests, Chi-Square, Hypothesis Testing, A/B Testing).
+    * Business Intelligence Architecture (Data modeling, KPI Automation, DAX).
+
+**Category 3: Robotics**
+* **Concepts & Technologies:**
+    * Forward & Inverse Kinematics.
+    * ROS 2.
+    * Dynamics.
+    * Modeling & Simulation Matlab/simulink.
+    * Control Systems (PID, LQR, LQG, Kalman Filter).
+    * Motion Planning.
+    * Trajectory Generation.
+    * Mechatronic Systems Integration.
+
+**Category 4: Industrial Automation**
+* **Concepts & Technologies:**
+    * Industrial Protocol Communication (OPC UA, Modbus, Profinet, Profibus).
+    * IIoT & Sensors (Node-RED, MQTT, WebSocket).
+    * Industrial Robot Programming (RoboStudio ABB, Fanuc RoboGuide).
+    * PLC Programming (TIA Portal Siemens).
+    * Digital Twin.
+    * HMI Design.
+    * SCADA Systems.
+    * Sensor-Actuator Networks.
+    * Machine-to-Machine M2M Communication.
+    * Industrial Network Architecture.
+
+**Category 6: AI & Machine Learning**
+* **Concepts & Technologies:**
+    * Supervised Prediction Models.
+    * Machine Learning Pipeline.
+    * Computer Vision (Image Classification, Object Detection YOLO).
+    * Time Series Forecasting.
+    * Model Training & Validation.
+
+---
+
+### 3. Visual Design & Network Hierarchy
+
+The UI is governed by a strict hierarchy determining node sizes and edge (link) thicknesses based on their classification. 
+
+**3.1 Node (Dot) Design & Sizing**
+* **Visual Anatomy:** The dot is a circle has the name inside with a representative illustration above on its circumference.
+* **Category Dots:** The key categories are the most large dots on the system. Categories dots are bigger.
+* **Concept Dots:** Each concept has its own representing dot smaller than its mother category dot. The dots representing the concept are bit smaller than the dots representing the categories.
+* **Technology Dots:** Each concept will be surrounded with bit smaller dots than the concept dots representing the technologies if being mentioned in parentheses.
+
+**3.2 Edge (Link) Design, Thickness & Logic**
+The stroke or the thickness of link is decreasing based on the class and rank of the connection. The links allowed only are: Category to category, Category to its own concept, Concept to concept, and Concept to its own technologies.
+
+* **Category-to-Category Links (Thickest/Boldest):** * The links between categories are bold links. Those are the main structure and main link which are bold links and bigger dots on the system interconnected dots map.
+    * Industry 4.0 is in the centre connected to data systems dot.
+    * Industry 4.0 is in the centre connected to Industrial Automation.
+    * Industry 4.0 is in the centre connected to AI and ML.
+    * Industry 4.0 is in the centre connected to Robotics.
+    * Additional primary links exist between: Robotics and Industrial automation, Robotics and AI and ML, Industrial automation and Data systems, AI and ML and Data systems, and internal links within Robotics.
+* **Category-to-Concept Links (Medium-Thick):** * Each concept is linked to its mother concept with a link less bold than link between category and category.
+* **Concept-to-Concept Links (Medium-Thick Cross-Linking):** * The links between other concepts and other concepts is the same thick as the link between the category and concept. 
+    * Only link concept to another concept if there is any related relationship for example linking the concept of smart manufacturing from industry 4.0 to IIoT and sensors and as well digital twin in Industrial automation and so on, applying this for all concept to establish a real network and rich network design between all the concepts.
+    * **Crucial Rule:** The links between the concepts and another concept are only those provided in the file “concept to concept links.text”.
+* **Concept-to-Technology Links (Thinnest):** * Each technology is linked to its mother concept to less bold links than category-concept link lines.

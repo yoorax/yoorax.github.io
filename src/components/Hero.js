@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { FiArrowRight, FiMail, FiGithub, FiLinkedin, FiEdit3 } from 'react-icons/fi';
 import { HiOutlineLightningBolt, HiOutlineGlobeAlt, HiOutlineChip } from 'react-icons/hi';
+import SkillMap from './SkillMap';
 import './Hero.css';
 
 function Hero() {
@@ -71,6 +72,9 @@ function Hero() {
           </div>
         </div>
       </div>
+
+      {/* ---- Hybrid Skill Map ---- */}
+      <SkillMap />
 
       {/* ---- Value Propositions ---- */}
       <div className="hero-value-section">
