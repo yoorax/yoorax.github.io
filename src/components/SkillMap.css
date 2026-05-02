@@ -12,9 +12,6 @@
   max-width: var(--max-width);
   margin: 0 auto;
   min-height: 600px;
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border-color);
-  background: var(--bg-secondary);
   overflow: hidden;
 }
 
@@ -22,6 +19,7 @@
   display: block;
   width: 100%;
   height: 100%;
+  background: transparent;
 }
 
 .skillmap-heading {

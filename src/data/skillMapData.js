@@ -36,23 +36,10 @@ export const nodes = [
   N('c-cv','Computer Vision',O,R,19,'#a78bfa','eye'),
   N('c-tsf','Time Series Forecasting',O,R,19,'#a78bfa','wave'),
   N('c-mtv','Model Training',O,R,19,'#a78bfa','target'),
-  N('t-pandas','Pandas',T,R,12,'#2d97c7','code'),
-  N('t-mpl','Matplotlib',T,R,12,'#2d97c7','bars'),
-  N('t-pbi','Power BI',T,R,12,'#2d97c7','bars'),
-  N('t-tab','Tableau',T,R,12,'#2d97c7','bars'),
-  N('t-sqlsrv','SQL Server',T,R,12,'#2d97c7','db'),
-  N('t-ssms','SSMS',T,R,12,'#2d97c7','db'),
-  N('t-dax','DAX',T,R,12,'#2d97c7','code'),
-  N('t-opcua','OPC UA',T,L,12,'#2aad7d','link'),
-  N('t-nodered','Node-RED',T,L,12,'#2aad7d','signal'),
-  N('t-mqtt','MQTT',T,L,12,'#2aad7d','signal'),
-  N('t-tia','TIA Portal',T,L,12,'#2aad7d','chip'),
-  N('t-yolo','YOLO',T,R,12,'#8670cc','eye'),
 ];
 
 const L3=(s,t)=>({source:s,target:t,weight:3});
 const L2=(s,t)=>({source:s,target:t,weight:2});
-const L1=(s,t)=>({source:s,target:t,weight:1});
 
 export const links = [
   L3('cat-i4','cat-ds'),L3('cat-i4','cat-ia'),L3('cat-i4','cat-ai'),L3('cat-ia','cat-ds'),L3('cat-ai','cat-ds'),
@@ -64,9 +51,6 @@ export const links = [
   L2('cat-ia','c-dtwin'),L2('cat-ia','c-hmi'),L2('cat-ia','c-scada'),L2('cat-ia','c-san'),
   L2('cat-ia','c-m2m'),L2('cat-ia','c-ina'),
   L2('cat-ai','c-spm'),L2('cat-ai','c-mlp'),L2('cat-ai','c-cv'),L2('cat-ai','c-tsf'),L2('cat-ai','c-mtv'),
-  L1('c-dap','t-pandas'),L1('c-dap','t-mpl'),L1('c-dv','t-pbi'),L1('c-dv','t-tab'),
-  L1('c-dbm','t-sqlsrv'),L1('c-dbm','t-ssms'),L1('c-bia','t-dax'),
-  L1('c-ipc','t-opcua'),L1('c-iiot','t-nodered'),L1('c-iiot','t-mqtt'),L1('c-plc','t-tia'),L1('c-cv','t-yolo'),
   // Cross-concept (max 5 per node)
   L2('c-pm','c-dap'),L2('c-pm','c-iiot'),L2('c-pm','c-spm'),L2('c-pm','c-tsf'),L2('c-pm','c-scada'),
   L2('c-ddo','c-dap'),L2('c-ddo','c-dv'),L2('c-ddo','c-bia'),L2('c-ddo','c-scada'),L2('c-ddo','c-dbm'),
