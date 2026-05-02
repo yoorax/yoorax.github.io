@@ -4,7 +4,7 @@ import { nodes as rawNodes, links as rawLinks } from '../data/skillMapData';
 import './SkillMap.css';
 
 const LEGEND = [
-  { label: 'Industry 4.0', color: '#ccff00' },
+  { label: 'Industry 4.0', color: '#00ff11' },
   { label: 'Data Systems', color: '#38bdf8' },
   { label: 'Industrial Automation', color: '#34d399' },
   { label: 'AI & Machine Learning', color: '#a78bfa' },

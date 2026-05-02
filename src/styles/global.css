@@ -55,16 +55,16 @@ button {
   --text-primary: #ffffff;
   --text-secondary: #a0a0a0;
   --text-muted: #666666;
-  --accent: #ccff00;
-  --accent-hover: #aef359;
-  --accent-dim: rgba(204, 255, 0, 0.1);
-  --accent-glow: rgba(204, 255, 0, 0.15);
+  --accent: #00ff11;
+  --accent-hover: #00cc0e;
+  --accent-dim: rgba(0, 255, 17, 0.1);
+  --accent-glow: rgba(0, 255, 17, 0.15);
   --border-color: #1e1e1e;
   --border-light: #2a2a2a;
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
   --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.4);
   --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.5);
-  --shadow-accent: 0 4px 20px rgba(204, 255, 0, 0.1);
+  --shadow-accent: 0 4px 20px rgba(0, 255, 17, 0.1);
   --gradient-hero: linear-gradient(135deg, #0a0a0a 0%, #111111 50%, #0a0a0a 100%);
   --overlay: rgba(0, 0, 0, 0.7);
 }
@@ -79,16 +79,16 @@ button {
   --text-primary: #0a0a0a;
   --text-secondary: #555555;
   --text-muted: #999999;
-  --accent: #88bb00;
-  --accent-hover: #6d9900;
-  --accent-dim: rgba(136, 187, 0, 0.1);
-  --accent-glow: rgba(136, 187, 0, 0.15);
+  --accent: #00bb0e;
+  --accent-hover: #009a0b;
+  --accent-dim: rgba(0, 255, 17, 0.1);
+  --accent-glow: rgba(0, 255, 17, 0.15);
   --border-color: #e0e0e0;
   --border-light: #d0d0d0;
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
   --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.08);
   --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.1);
-  --shadow-accent: 0 4px 20px rgba(136, 187, 0, 0.15);
+  --shadow-accent: 0 4px 20px rgba(0, 255, 17, 0.15);
   --gradient-hero: linear-gradient(135deg, #f5f5f5 0%, #eeeeee 50%, #f5f5f5 100%);
   --overlay: rgba(255, 255, 255, 0.7);
 }
