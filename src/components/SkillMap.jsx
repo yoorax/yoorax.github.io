@@ -137,11 +137,7 @@ function SkillMap() {
     const nodesCopy = rawNodes.map(n => ({ ...n }));
     const linksCopy = rawLinks.map(l => ({ ...l }));
 
-    // Visual positions separate from physics — drives the bloom animation
-    const lerpPos = {};
-    nodesCopy.forEach(n => { lerpPos[n.id] = { x: W / 2, y: H / 2 }; });
-    const LERP_IN  = 0.09; // speed toward bloom
-    const LERP_OUT = 0.06; // speed back to physics
+
 
     const targetX = (g) => g === 'left' ? W * 0.2 : g === 'right' ? W * 0.8 : W * 0.5;
 
@@ -185,12 +181,11 @@ function SkillMap() {
         }
       }
 
-      // Detect hover using lerped visual positions
+      // Detect hover
       let hovered = null;
       let minD = Infinity;
       for (const n of nodesCopy) {
-        const lx = lerpPos[n.id].x, ly = lerpPos[n.id].y;
-        const dx = lx - mx, dy = ly - my;
+        const dx = n.x - mx, dy = n.y - my;
         const dist = Math.sqrt(dx * dx + dy * dy);
         if (dist < n.radius * 2.5 && dist < minD) { minD = dist; hovered = n; }
       }
@@ -212,31 +207,26 @@ function SkillMap() {
         neighborMap[hovered.id]?.forEach(id => activeSet.add(id));
       }
 
-      // ── Radial bloom targets ──
-      const bloomTargets = {};
-      if (hovered && hp > 0) {
-        const neighbors = [...(neighborMap[hovered.id] || [])];
-        const count = neighbors.length;
-        const bloomR = hovered.type === 'category' ? 160 : 130;
-        bloomTargets[hovered.id] = { x: hovered.x, y: hovered.y };
-        neighbors.forEach((nbId, i) => {
-          const angle = -Math.PI / 2 + (i / count) * Math.PI * 2;
-          bloomTargets[nbId] = {
-            x: hovered.x + Math.cos(angle) * bloomR,
-            y: hovered.y + Math.sin(angle) * bloomR,
-          };
-        });
+      // ── Electron repulsion: push active nodes apart just enough to be visible ──
+      if (hovered && hp > 0.2) {
+        const activeNodes = nodesCopy.filter(n => activeSet.has(n.id));
+        for (let i = 0; i < activeNodes.length; i++) {
+          for (let j = i + 1; j < activeNodes.length; j++) {
+            const a = activeNodes[i], b = activeNodes[j];
+            const dx = b.x - a.x, dy = b.y - a.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            const minDist = a.radius + b.radius + 20;
+            if (dist < minDist && dist > 0) {
+              const force = (minDist - dist) / minDist * 0.35;
+              a.vx -= (dx / dist) * force;
+              a.vy -= (dy / dist) * force;
+              b.vx += (dx / dist) * force;
+              b.vy += (dy / dist) * force;
+            }
+          }
+        }
+        sim.alpha(Math.max(sim.alpha(), 0.1)).restart();
       }
-
-      // ── Lerp all visual positions ──
-      for (const n of nodesCopy) {
-        const lp = lerpPos[n.id];
-        const bt = bloomTargets[n.id];
-        lp.x += ((bt ? bt.x : n.x) - lp.x) * (bt ? LERP_IN : LERP_OUT);
-        lp.y += ((bt ? bt.y : n.y) - lp.y) * (bt ? LERP_IN : LERP_OUT);
-      }
-
-      if (!hovered && sim.alpha() < 0.04) sim.alpha(0.04).restart();
 
       // ── Draw Links ──
       for (const l of linksCopy) {
@@ -261,15 +251,11 @@ function SkillMap() {
           ctx.strokeStyle = l.weight === 3 ? 'rgba(100,110,130,0.45)' : 'rgba(100,110,130,0.22)';
           ctx.lineWidth = l.weight === 3 ? 1.4 : 0.9;
         }
-        const sx = lerpPos[s.id].x, sy = lerpPos[s.id].y;
-        const tx = lerpPos[t.id].x, ty2 = lerpPos[t.id].y;
-        ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(tx, ty2); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(s.x, s.y); ctx.lineTo(t.x, t.y); ctx.stroke();
       }
 
       // ── Draw Nodes ──
       for (const n of nodesCopy) {
-        const nx = lerpPos[n.id].x;
-        const ny = lerpPos[n.id].y;
         const isHov = hovered && n.id === hovered.id;
         const isNb = hovered && activeSet.has(n.id);
         const dimmed = hp > 0 && !isNb;
@@ -282,21 +268,21 @@ function SkillMap() {
         // ── Outer glow pulse for hovered node ──
         if (isHov && hp > 0.05) {
           const glowR = r + 20 * hp;
-          const g = ctx.createRadialGradient(nx, ny, r * 0.8, nx, ny, glowR);
+          const g = ctx.createRadialGradient(n.x, n.y, r * 0.8, n.x, n.y, glowR);
           g.addColorStop(0, n.color + '30');
           g.addColorStop(0.5, n.color + '14');
           g.addColorStop(1, n.color + '00');
-          ctx.beginPath(); ctx.arc(nx, ny, glowR, 0, Math.PI * 2);
+          ctx.beginPath(); ctx.arc(n.x, n.y, glowR, 0, Math.PI * 2);
           ctx.fillStyle = g; ctx.fill();
         }
 
         // ── Inner dark fill — matches the dark site background ──
-        ctx.beginPath(); ctx.arc(nx, ny, r, 0, Math.PI * 2);
+        ctx.beginPath(); ctx.arc(n.x, n.y, r, 0, Math.PI * 2);
         ctx.fillStyle = dimmed ? 'rgba(6,9,18,0.55)' : 'rgba(6,9,18,0.90)';
         ctx.fill();
 
         // ── Colored ring border ──
-        ctx.beginPath(); ctx.arc(nx, ny, r, 0, Math.PI * 2);
+        ctx.beginPath(); ctx.arc(n.x, n.y, r, 0, Math.PI * 2);
         if (isHov) {
           ctx.strokeStyle = n.color;
           ctx.lineWidth = 2.8 + 1.2 * hp;
@@ -313,7 +299,7 @@ function SkillMap() {
         ctx.stroke();
 
         // ── Icon (white line-art, always centered) ──
-        drawIcon(ctx, n.icon, nx, ny, r);
+        drawIcon(ctx, n.icon, n.x, n.y, r);
 
         // ── Label pill ──
         const showLabel = isHov || (isNb && hp > 0.3) || (n.type === 'category' && hp < 0.3);
@@ -321,17 +307,17 @@ function SkillMap() {
           const fs = isHov ? 11 : n.type === 'category' ? 10 : 9;
           ctx.font = `600 ${fs}px Inter,sans-serif`;
           ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-          const lty = ny - r - 13;
+          const ty = n.y - r - 13;
           const tw = ctx.measureText(n.label).width + 16;
           const th = fs + 10;
-          ctx.beginPath(); ctx.roundRect(nx - tw / 2, lty - th / 2, tw, th, th / 2);
+          ctx.beginPath(); ctx.roundRect(n.x - tw / 2, ty - th / 2, tw, th, th / 2);
           ctx.fillStyle = isHov ? 'rgba(6,9,18,0.85)' : 'rgba(6,9,18,0.70)';
           ctx.fill();
           ctx.strokeStyle = isHov ? n.color + 'aa' : 'rgba(255,255,255,0.10)';
           ctx.lineWidth = isHov ? 1 : 0.6;
           ctx.stroke();
           ctx.fillStyle = (isHov || isNb) ? '#ffffff' : n.type === 'category' ? n.color : 'rgba(220,228,240,0.90)';
-          ctx.fillText(n.label, nx, lty);
+          ctx.fillText(n.label, n.x, ty);
         }
         ctx.globalAlpha = 1;
       }
