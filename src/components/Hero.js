@@ -52,17 +52,15 @@ function Hero() {
             </div>
           </div>
 
-          {/* Right: Photo */}
+          {/* Right: Illustration */}
           <div className="hero-photo-wrapper animate-in animate-in-delay-2">
             <div className="hero-photo-glow"></div>
-            <div className="hero-photo-frame">
-              <img
-                src="/portfolio_image.webp"
-                alt="Rachid Kherbech — Professional portrait"
-                className="hero-photo"
-              />
-            </div>
-            {/* Floating badges */}
+            <img
+              src="/portfolio_image_illustration.webp"
+              alt="Rachid Kherbech — Professional illustration"
+              className="hero-illustration"
+            />
+            {/* Floating badges — untouched */}
             <div className="hero-badge badge-top">
               <HiOutlineChip /> Industry 4.0
             </div>
