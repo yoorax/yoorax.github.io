@@ -213,15 +213,19 @@ function SkillMap() {
           && (s.id === hovered.id || t.id === hovered.id);
 
         if (hp > 0 && !isActive) {
-          const dimAlpha = 0.08 * (1 - hp) + 0.01 * hp;
-          ctx.strokeStyle = `rgba(255,255,255,${dimAlpha})`;
-          ctx.lineWidth = 0.3;
+          // Fade non-active links almost to invisible
+          ctx.strokeStyle = `rgba(255,255,255,${0.04 * (1 - hp * 0.8)})`;
+          ctx.lineWidth = 0.6;
         } else if (hp > 0 && isActive) {
-          ctx.strokeStyle = hovered.color + Math.round(0x44 + 0x44 * hp).toString(16);
-          ctx.lineWidth = (l.weight === 3 ? 3 : l.weight === 2 ? 2 : 1) * (0.5 + 0.5 * hp);
+          // Active links: vivid category color, thicker stroke
+          const hexA = Math.round(0x88 + 0x66 * hp).toString(16).padStart(2,'0');
+          ctx.strokeStyle = hovered.color + hexA;
+          ctx.lineWidth = l.weight === 3 ? 2.5 : 2;
+          ctx.lineCap = 'round';
         } else {
-          ctx.strokeStyle = l.weight === 3 ? 'rgba(255,255,255,0.1)' : l.weight === 2 ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.02)';
-          ctx.lineWidth = l.weight === 3 ? 2 : l.weight === 2 ? 1 : 0.5;
+          // Resting state: thin, subtle
+          ctx.strokeStyle = l.weight === 3 ? 'rgba(255,255,255,0.09)' : 'rgba(255,255,255,0.04)';
+          ctx.lineWidth = l.weight === 3 ? 1.2 : 0.7;
         }
         ctx.beginPath(); ctx.moveTo(s.x, s.y); ctx.lineTo(t.x, t.y); ctx.stroke();
       }
@@ -231,40 +235,67 @@ function SkillMap() {
         const isHov = hovered && n.id === hovered.id;
         const isNb = hovered && activeSet.has(n.id);
         const dimmed = hp > 0 && !isNb;
-        const scaleT = isHov ? 1.5 : 1;
+        const scaleT = isHov ? 1.38 : 1;
         const r = n.radius * (1 + (scaleT - 1) * hp);
-        const nodeAlpha = dimmed ? (1 - hp * 0.75) : 1;
+        const nodeAlpha = dimmed ? (1 - hp * 0.72) : 1;
 
         ctx.globalAlpha = nodeAlpha;
 
-        // Glow
-        if (isHov && hp > 0.1) {
-          ctx.beginPath(); ctx.arc(n.x, n.y, r + 10 * hp, 0, Math.PI * 2);
-          const g = ctx.createRadialGradient(n.x, n.y, r, n.x, n.y, r + 10 * hp);
-          g.addColorStop(0, n.color + '55'); g.addColorStop(1, n.color + '00');
+        // ── Outer glow pulse for hovered node ──
+        if (isHov && hp > 0.05) {
+          const glowR = r + 20 * hp;
+          const g = ctx.createRadialGradient(n.x, n.y, r * 0.8, n.x, n.y, glowR);
+          g.addColorStop(0, n.color + '30');
+          g.addColorStop(0.5, n.color + '14');
+          g.addColorStop(1, n.color + '00');
+          ctx.beginPath(); ctx.arc(n.x, n.y, glowR, 0, Math.PI * 2);
           ctx.fillStyle = g; ctx.fill();
         }
 
-        // Circle
+        // ── Inner dark fill — matches the dark site background ──
         ctx.beginPath(); ctx.arc(n.x, n.y, r, 0, Math.PI * 2);
-        ctx.fillStyle = (isHov || isNb) ? n.color + (n.type === 'category' ? 'dd' : 'aa')
-          : dimmed ? 'rgba(50,50,50,0.5)' : n.color + (n.type === 'category' ? 'bb' : n.type === 'concept' ? '77' : '55');
+        ctx.fillStyle = dimmed ? 'rgba(6,9,18,0.55)' : 'rgba(6,9,18,0.90)';
         ctx.fill();
 
-        // Icon inside
-        if (!dimmed || hp < 0.5) drawIcon(ctx, n.icon, n.x, n.y, r);
+        // ── Colored ring border ──
+        ctx.beginPath(); ctx.arc(n.x, n.y, r, 0, Math.PI * 2);
+        if (isHov) {
+          ctx.strokeStyle = n.color;
+          ctx.lineWidth = 2.8 + 1.2 * hp;
+        } else if (isNb) {
+          ctx.strokeStyle = n.color + 'bb';
+          ctx.lineWidth = n.type === 'category' ? 2.2 : 1.8;
+        } else if (dimmed) {
+          ctx.strokeStyle = 'rgba(180,190,210,0.12)';
+          ctx.lineWidth = 1;
+        } else {
+          ctx.strokeStyle = n.color + (n.type === 'category' ? '6a' : '40');
+          ctx.lineWidth = n.type === 'category' ? 2.2 : 1.4;
+        }
+        ctx.stroke();
 
-        // Labels
+        // ── Icon (white line-art, always centered) ──
+        drawIcon(ctx, n.icon, n.x, n.y, r);
+
+        // ── Label pill ──
         const showLabel = isHov || (isNb && hp > 0.3) || (n.type === 'category' && hp < 0.3);
         if (showLabel) {
-          const fs = isHov ? 12 : n.type === 'category' ? 11 : 10;
-          ctx.font = `bold ${fs}px Inter,sans-serif`;
+          const fs = isHov ? 11 : n.type === 'category' ? 10 : 9;
+          ctx.font = `600 ${fs}px Inter,sans-serif`;
           ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-          const ty = n.y - r - 9;
-          const tw = ctx.measureText(n.label).width + 10;
-          ctx.fillStyle = 'rgba(0,0,0,0.75)';
-          ctx.beginPath(); ctx.roundRect(n.x - tw / 2, ty - 9, tw, 18, 5); ctx.fill();
-          ctx.fillStyle = isHov ? '#fff' : n.color;
+          const ty = n.y - r - 13;
+          const tw = ctx.measureText(n.label).width + 16;
+          const th = fs + 10;
+          // Pill fill
+          ctx.beginPath(); ctx.roundRect(n.x - tw / 2, ty - th / 2, tw, th, th / 2);
+          ctx.fillStyle = isHov ? 'rgba(6,9,18,0.85)' : 'rgba(6,9,18,0.70)';
+          ctx.fill();
+          // Pill border
+          ctx.strokeStyle = isHov ? n.color + 'aa' : 'rgba(255,255,255,0.10)';
+          ctx.lineWidth = isHov ? 1 : 0.6;
+          ctx.stroke();
+          // Text
+          ctx.fillStyle = isHov ? '#ffffff' : n.type === 'category' ? n.color : 'rgba(200,212,230,0.88)';
           ctx.fillText(n.label, n.x, ty);
         }
         ctx.globalAlpha = 1;
