@@ -149,11 +149,11 @@ function SkillMap() {
         .strength(d => d.weight === 3 ? 0.15 : d.weight === 2 ? 0.06 : 0.05))
       .force('charge', forceManyBody().strength(-220))
       .force('center', forceCenter(W / 2, H / 2).strength(0.02))
-      .force('collide', forceCollide(d => d.radius + 8).iterations(3))
+      .force('collide', forceCollide(d => d.radius + 12).iterations(4))
       .force('x', forceX(d => targetX(d.group)).strength(0.13))
       .force('y', forceY(H / 2).strength(0.03))
       .alphaDecay(0.004)
-      .velocityDecay(0.4);
+      .velocityDecay(0.42);
 
     simRef.current = sim;
     const neighborMap = {};
@@ -190,82 +190,82 @@ function SkillMap() {
         if (dist < n.radius * 2.5 && dist < minD) { minD = dist; hovered = n; }
       }
 
-      // Smooth hover transition
-      const newId = hovered ? hovered.id : null;
-      if (newId !== hoverIdRef.current) {
-        if (newId) hpRef.current = 0; // reset on new target
-        hoverIdRef.current = newId;
-      }
-      const hTarget = hovered ? 1 : 0;
-      hpRef.current += (hTarget - hpRef.current) * 0.1;
-      if (hpRef.current < 0.01) hpRef.current = 0;
-      const hp = hpRef.current;
-
+      // Build active set first (needed before force updates)
       const activeSet = new Set();
       if (hovered) {
         activeSet.add(hovered.id);
         neighborMap[hovered.id]?.forEach(id => activeSet.add(id));
       }
 
-      // ── Electron repulsion: push active nodes apart just enough to be visible ──
-      if (hovered && hp > 0.2) {
-        const activeNodes = nodesCopy.filter(n => activeSet.has(n.id));
-        for (let i = 0; i < activeNodes.length; i++) {
-          for (let j = i + 1; j < activeNodes.length; j++) {
-            const a = activeNodes[i], b = activeNodes[j];
-            const dx = b.x - a.x, dy = b.y - a.y;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-            const minDist = a.radius + b.radius + 20;
-            if (dist < minDist && dist > 0) {
-              const force = (minDist - dist) / minDist * 0.35;
-              a.vx -= (dx / dist) * force;
-              a.vy -= (dy / dist) * force;
-              b.vx += (dx / dist) * force;
-              b.vy += (dy / dist) * force;
-            }
-          }
-        }
-        sim.alpha(Math.max(sim.alpha(), 0.1)).restart();
-      }
+      // Smooth hover progress + dynamic d3 force adjustment on hover change
+      const newId = hovered ? hovered.id : null;
+      if (newId !== hoverIdRef.current) {
+        if (newId) hpRef.current = 0;
+        hoverIdRef.current = newId;
 
-      // ── Draw Links ──
+        if (newId) {
+          // Hover START: boost charge & collide for active nodes, go viscous
+          sim.force('charge', forceManyBody().strength(d =>
+            activeSet.has(d.id) ? -420 : -80));
+          sim.force('collide', forceCollide(d =>
+            activeSet.has(d.id) ? d.radius + 28 : d.radius + 6).iterations(5));
+          sim.velocityDecay(0.58);
+          sim.alpha(0.5).restart();
+        } else {
+          // Hover END: restore default forces, gentle settle
+          sim.force('charge', forceManyBody().strength(-220));
+          sim.force('collide', forceCollide(d => d.radius + 12).iterations(4));
+          sim.velocityDecay(0.42);
+          sim.alpha(0.12).restart();
+        }
+      }
+      const hTarget = hovered ? 1 : 0;
+      hpRef.current += (hTarget - hpRef.current) * 0.1;
+      if (hpRef.current < 0.01) hpRef.current = 0;
+      const hp = hpRef.current;
+
       for (const l of linksCopy) {
         const s = l.source, t = l.target;
         if (typeof s === 'string') continue;
         const isActive = hovered && activeSet.has(s.id) && activeSet.has(t.id)
           && (s.id === hovered.id || t.id === hovered.id);
-
-        if (hp > 0 && !isActive) {
-          // Dim non-active links — neutral gray works on light AND dark backgrounds
+        if (isActive) continue; // drawn in layer 2
+        if (hp > 0) {
           const a = (0.12 * (1 - hp * 0.85)).toFixed(2);
           ctx.strokeStyle = `rgba(100,110,130,${a})`;
           ctx.lineWidth = 0.8;
-        } else if (hp > 0 && isActive) {
-          // Active links: vivid category color, thicker stroke
-          const hexA = Math.round(0x99 + 0x55 * hp).toString(16).padStart(2,'0');
-          ctx.strokeStyle = hovered.color + hexA;
-          ctx.lineWidth = l.weight === 3 ? 2.5 : 2;
-          ctx.lineCap = 'round';
         } else {
-          // Resting state — neutral gray, clearly visible on both light & dark
           ctx.strokeStyle = l.weight === 3 ? 'rgba(100,110,130,0.45)' : 'rgba(100,110,130,0.22)';
           ctx.lineWidth = l.weight === 3 ? 1.4 : 0.9;
         }
         ctx.beginPath(); ctx.moveTo(s.x, s.y); ctx.lineTo(t.x, t.y); ctx.stroke();
       }
 
-      // ── Draw Nodes ──
-      for (const n of nodesCopy) {
+      // ── Layer 2: Active links (on top of inactive links) ──
+      if (hovered && hp > 0) {
+        for (const l of linksCopy) {
+          const s = l.source, t = l.target;
+          if (typeof s === 'string') continue;
+          const isActive = activeSet.has(s.id) && activeSet.has(t.id)
+            && (s.id === hovered.id || t.id === hovered.id);
+          if (!isActive) continue;
+          const hexA = Math.round(0x99 + 0x55 * hp).toString(16).padStart(2,'0');
+          ctx.strokeStyle = hovered.color + hexA;
+          ctx.lineWidth = l.weight === 3 ? 2.5 : 2;
+          ctx.lineCap = 'round';
+          ctx.beginPath(); ctx.moveTo(s.x, s.y); ctx.lineTo(t.x, t.y); ctx.stroke();
+        }
+      }
+
+      // Helper: draw a single node
+      const drawNode = (n) => {
         const isHov = hovered && n.id === hovered.id;
-        const isNb = hovered && activeSet.has(n.id);
+        const isNb  = hovered && activeSet.has(n.id);
         const dimmed = hp > 0 && !isNb;
         const scaleT = isHov ? 1.38 : 1;
         const r = n.radius * (1 + (scaleT - 1) * hp);
         const nodeAlpha = dimmed ? (1 - hp * 0.72) : 1;
-
         ctx.globalAlpha = nodeAlpha;
-
-        // ── Outer glow pulse for hovered node ──
         if (isHov && hp > 0.05) {
           const glowR = r + 20 * hp;
           const g = ctx.createRadialGradient(n.x, n.y, r * 0.8, n.x, n.y, glowR);
@@ -275,33 +275,23 @@ function SkillMap() {
           ctx.beginPath(); ctx.arc(n.x, n.y, glowR, 0, Math.PI * 2);
           ctx.fillStyle = g; ctx.fill();
         }
-
-        // ── Inner dark fill — matches the dark site background ──
         ctx.beginPath(); ctx.arc(n.x, n.y, r, 0, Math.PI * 2);
         ctx.fillStyle = dimmed ? 'rgba(6,9,18,0.55)' : 'rgba(6,9,18,0.90)';
         ctx.fill();
-
-        // ── Colored ring border ──
         ctx.beginPath(); ctx.arc(n.x, n.y, r, 0, Math.PI * 2);
         if (isHov) {
-          ctx.strokeStyle = n.color;
-          ctx.lineWidth = 2.8 + 1.2 * hp;
+          ctx.strokeStyle = n.color; ctx.lineWidth = 2.8 + 1.2 * hp;
         } else if (isNb) {
           ctx.strokeStyle = n.color + 'bb';
           ctx.lineWidth = n.type === 'category' ? 2.2 : 1.8;
         } else if (dimmed) {
-          ctx.strokeStyle = 'rgba(180,190,210,0.12)';
-          ctx.lineWidth = 1;
+          ctx.strokeStyle = 'rgba(180,190,210,0.12)'; ctx.lineWidth = 1;
         } else {
           ctx.strokeStyle = n.color + (n.type === 'category' ? '6a' : '40');
           ctx.lineWidth = n.type === 'category' ? 2.2 : 1.4;
         }
         ctx.stroke();
-
-        // ── Icon (white line-art, always centered) ──
         drawIcon(ctx, n.icon, n.x, n.y, r);
-
-        // ── Label pill ──
         const showLabel = isHov || (isNb && hp > 0.3) || (n.type === 'category' && hp < 0.3);
         if (showLabel) {
           const fs = isHov ? 11 : n.type === 'category' ? 10 : 9;
@@ -320,6 +310,20 @@ function SkillMap() {
           ctx.fillText(n.label, n.x, ty);
         }
         ctx.globalAlpha = 1;
+      };
+
+      // ── Layer 3: Dimmed / inactive nodes ──
+      for (const n of nodesCopy) {
+        if (hovered && activeSet.has(n.id)) continue; // drawn in layer 4
+        drawNode(n);
+      }
+
+      // ── Layer 4: Active nodes on top (never hidden behind anything) ──
+      if (hovered) {
+        for (const n of nodesCopy) {
+          if (!activeSet.has(n.id)) continue;
+          drawNode(n);
+        }
       }
 
 
