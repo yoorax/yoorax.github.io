@@ -213,19 +213,20 @@ function SkillMap() {
           && (s.id === hovered.id || t.id === hovered.id);
 
         if (hp > 0 && !isActive) {
-          // Fade non-active links almost to invisible
-          ctx.strokeStyle = `rgba(255,255,255,${0.04 * (1 - hp * 0.8)})`;
-          ctx.lineWidth = 0.6;
+          // Dim non-active links — neutral gray works on light AND dark backgrounds
+          const a = (0.12 * (1 - hp * 0.85)).toFixed(2);
+          ctx.strokeStyle = `rgba(100,110,130,${a})`;
+          ctx.lineWidth = 0.8;
         } else if (hp > 0 && isActive) {
           // Active links: vivid category color, thicker stroke
-          const hexA = Math.round(0x88 + 0x66 * hp).toString(16).padStart(2,'0');
+          const hexA = Math.round(0x99 + 0x55 * hp).toString(16).padStart(2,'0');
           ctx.strokeStyle = hovered.color + hexA;
           ctx.lineWidth = l.weight === 3 ? 2.5 : 2;
           ctx.lineCap = 'round';
         } else {
-          // Resting state: thin, subtle
-          ctx.strokeStyle = l.weight === 3 ? 'rgba(255,255,255,0.09)' : 'rgba(255,255,255,0.04)';
-          ctx.lineWidth = l.weight === 3 ? 1.2 : 0.7;
+          // Resting state — neutral gray, clearly visible on both light & dark
+          ctx.strokeStyle = l.weight === 3 ? 'rgba(100,110,130,0.45)' : 'rgba(100,110,130,0.22)';
+          ctx.lineWidth = l.weight === 3 ? 1.4 : 0.9;
         }
         ctx.beginPath(); ctx.moveTo(s.x, s.y); ctx.lineTo(t.x, t.y); ctx.stroke();
       }
@@ -294,8 +295,8 @@ function SkillMap() {
           ctx.strokeStyle = isHov ? n.color + 'aa' : 'rgba(255,255,255,0.10)';
           ctx.lineWidth = isHov ? 1 : 0.6;
           ctx.stroke();
-          // Text
-          ctx.fillStyle = isHov ? '#ffffff' : n.type === 'category' ? n.color : 'rgba(200,212,230,0.88)';
+          // Text — hovered node: white, neighbors: white, category at rest: category color
+          ctx.fillStyle = (isHov || isNb) ? '#ffffff' : n.type === 'category' ? n.color : 'rgba(220,228,240,0.90)';
           ctx.fillText(n.label, n.x, ty);
         }
         ctx.globalAlpha = 1;
