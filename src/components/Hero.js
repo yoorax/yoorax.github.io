@@ -1,11 +1,30 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { FiArrowRight, FiMail, FiGithub, FiLinkedin, FiEdit3 } from 'react-icons/fi';
+import { FiArrowRight, FiMail, FiGithub, FiLinkedin, FiInstagram } from 'react-icons/fi';
+import { FaWhatsapp } from 'react-icons/fa';
 import { HiOutlineLightningBolt, HiOutlineGlobeAlt, HiOutlineChip } from 'react-icons/hi';
 import SkillMap from './SkillMap';
+import DashboardKPI from './DashboardKPI';
+import { getContactSettings } from '../data/supabaseLoader';
 import './Hero.css';
 
 function Hero() {
+  const [contacts, setContacts] = useState({
+    email: 'rachidkherbech@gmail.com',
+    phone: '+212 771 907 202',
+    whatsapp: 'https://wa.me/212771907202',
+    github: 'https://github.com/yoorax',
+    linkedin: 'https://linkedin.com/in/rachid-kherbech-1a2b3c',
+    instagram: 'https://instagram.com/yoorachid',
+    reddit: 'https://reddit.com',
+    medium: 'https://medium.com/@rachidkherbech',
+    location: 'Agadir, Morocco'
+  });
+
+  useEffect(() => {
+    getContactSettings().then(data => setContacts(data));
+  }, []);
+
   return (
     <section className="hero-page" id="hero-section">
       {/* ---- Above the Fold ---- */}
@@ -30,25 +49,36 @@ function Hero() {
               <Link to="/projects" className="btn btn-primary" id="cta-projects">
                 View My Projects <FiArrowRight />
               </Link>
-              <a href="mailto:rachidkherbech@gmail.com" className="btn btn-outline" id="cta-connect">
+              <a href={`mailto:${contacts.email}`} className="btn btn-outline" id="cta-connect">
                 Let's Connect <FiMail />
               </a>
             </div>
 
             {/* Social Row */}
             <div className="hero-socials">
-              <a href="mailto:rachidkherbech@gmail.com" className="social-icon" aria-label="Email" title="Email">
+              <a href={`mailto:${contacts.email}`} className="social-icon" aria-label="Email" title="Email">
                 <FiMail />
               </a>
-              <a href="https://linkedin.com/in/rachid-kherbech-1a2b3c" target="_blank" rel="noopener noreferrer" className="social-icon" aria-label="LinkedIn" title="LinkedIn">
-                <FiLinkedin />
-              </a>
-              <a href="https://github.com/yoorax" target="_blank" rel="noopener noreferrer" className="social-icon" aria-label="GitHub" title="GitHub">
-                <FiGithub />
-              </a>
-              <a href="https://medium.com/@rachidkherbech" target="_blank" rel="noopener noreferrer" className="social-icon" aria-label="Medium" title="Medium">
-                <FiEdit3 />
-              </a>
+              {contacts.linkedin && (
+                <a href={contacts.linkedin} target="_blank" rel="noopener noreferrer" className="social-icon" aria-label="LinkedIn" title="LinkedIn">
+                  <FiLinkedin />
+                </a>
+              )}
+              {contacts.github && (
+                <a href={contacts.github} target="_blank" rel="noopener noreferrer" className="social-icon" aria-label="GitHub" title="GitHub">
+                  <FiGithub />
+                </a>
+              )}
+              {contacts.whatsapp && (
+                <a href={contacts.whatsapp} target="_blank" rel="noopener noreferrer" className="social-icon" aria-label="WhatsApp" title="WhatsApp">
+                  <FaWhatsapp />
+                </a>
+              )}
+              {contacts.instagram && (
+                <a href={contacts.instagram} target="_blank" rel="noopener noreferrer" className="social-icon" aria-label="Instagram" title="Instagram">
+                  <FiInstagram />
+                </a>
+              )}
             </div>
           </div>
 
@@ -70,6 +100,9 @@ function Hero() {
           </div>
         </div>
       </div>
+
+      {/* ---- Dashboard KPI Section ---- */}
+      <DashboardKPI />
 
       {/* ---- Hybrid Skill Map ---- */}
       <SkillMap />

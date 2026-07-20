@@ -1,0 +1,226 @@
+/* ===================================================
+   Dashboard KPI Section Styles
+   =================================================== */
+
+.dashboard-section {
+  padding: var(--space-3xl) 0;
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
+  position: relative;
+  z-index: 5;
+}
+
+.dashboard-header {
+  text-align: center;
+  margin-bottom: var(--space-2xl);
+}
+
+.dashboard-title {
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: var(--space-sm);
+}
+
+.dashboard-subtitle {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-lg);
+  padding: var(--space-md) 0;
+}
+
+/* ----- KPI Card Styling ----- */
+.kpi-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-lg) var(--space-xl);
+  border-radius: var(--radius-md);
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  
+  /* Smooth transition for pop up (translateY + 1.1x scale) and colors */
+  transition: 
+    transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), 
+    box-shadow 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+    background-color 0.2s ease, 
+    border-color 0.2s ease, 
+    color 0.2s ease;
+  transform-origin: center;
+}
+
+.kpi-card:hover {
+  transform: translateY(-15px) scale(1.15); /* Resizes by 15% and translates up by 15px */
+  color: #ffffff !important;
+}
+
+.kpi-icon-wrapper {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.15);
+  flex-shrink: 0;
+  transition: background-color 0.2s ease;
+}
+
+.kpi-card:hover .kpi-icon-wrapper {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.kpi-icon {
+  font-size: 1.5rem;
+  transition: color 0.2s ease;
+}
+
+.kpi-card:hover .kpi-icon {
+  color: #ffffff !important;
+}
+
+.kpi-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.kpi-value {
+  font-size: clamp(1.3rem, 2.5vw, 1.8rem);
+  font-weight: 800;
+  line-height: 1.1;
+  transition: color 0.2s ease;
+}
+
+.kpi-card:hover .kpi-value {
+  color: #ffffff !important;
+}
+
+.kpi-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  transition: color 0.2s ease;
+}
+
+.kpi-card:hover .kpi-label {
+  color: #ffffff !important;
+}
+
+/* ----- Bright & Electric Colors ----- */
+
+/* Card 1: Pink (#ff2a5f) */
+.kpi-card.pink {
+  background: rgba(255, 42, 95, 0.20); /* 20% default opacity */
+  border: 1px solid rgba(255, 42, 95, 0.30);
+  color: #ff2a5f;
+}
+.kpi-card.pink .kpi-icon { color: #ff2a5f; }
+.kpi-card.pink .kpi-value { color: #ff2a5f; }
+.kpi-card.pink .kpi-label { color: #ff4774; }
+
+.kpi-card.pink:hover {
+  background: rgba(255, 42, 95, 1.0); /* Solid background on hover */
+  border-color: rgba(255, 42, 95, 1.0);
+  box-shadow: 0 15px 35px rgba(255, 42, 95, 0.45); /* Rich glowing color aura */
+}
+
+/* Card 2: Blue (#1d75f2) */
+.kpi-card.blue {
+  background: rgba(29, 117, 242, 0.20); /* 20% default opacity */
+  border: 1px solid rgba(29, 117, 242, 0.30);
+  color: #1d75f2;
+}
+.kpi-card.blue .kpi-icon { color: #1d75f2; }
+.kpi-card.blue .kpi-value { color: #1d75f2; }
+.kpi-card.blue .kpi-label { color: #3b88f3; }
+
+.kpi-card.blue:hover {
+  background: rgba(29, 117, 242, 1.0); /* Solid background on hover */
+  border-color: rgba(29, 117, 242, 1.0);
+  box-shadow: 0 15px 35px rgba(29, 117, 242, 0.45); /* Rich glowing color aura */
+}
+
+/* Card 3: Green (#00c853) */
+.kpi-card.green {
+  background: rgba(0, 200, 83, 0.20); /* 20% default opacity */
+  border: 1px solid rgba(0, 200, 83, 0.30);
+  color: #00c853;
+}
+.kpi-card.green .kpi-icon { color: #00c853; }
+.kpi-card.green .kpi-value { color: #00c853; }
+.kpi-card.green .kpi-label { color: #1ad165; }
+
+.kpi-card.green:hover {
+  background: rgba(0, 200, 83, 1.0); /* Solid background on hover */
+  border-color: rgba(0, 200, 83, 1.0);
+  box-shadow: 0 15px 35px rgba(0, 200, 83, 0.45); /* Rich glowing color aura */
+}
+
+/* Card 4: Purple (#820ad9) */
+.kpi-card.purple {
+  background: rgba(130, 10, 217, 0.20); /* 20% default opacity */
+  border: 1px solid rgba(130, 10, 217, 0.30);
+  color: #820ad9;
+}
+.kpi-card.purple .kpi-icon { color: #820ad9; }
+.kpi-card.purple .kpi-value { color: #820ad9; }
+.kpi-card.purple .kpi-label { color: #9731df; }
+
+.kpi-card.purple:hover {
+  background: rgba(130, 10, 217, 1.0); /* Solid background on hover */
+  border-color: rgba(130, 10, 217, 1.0);
+  box-shadow: 0 15px 35px rgba(130, 10, 217, 0.45); /* Rich glowing color aura */
+}
+
+/* ----- Loading Spinner ----- */
+.dashboard-loading {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-xl) 0;
+}
+
+.dashboard-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--border-color);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* ----- Responsive ----- */
+@media (max-width: 1024px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .kpi-card:hover {
+    transform: none; /* Disable scale/translate scale on mobile/tablet to prevent touch issues */
+    box-shadow: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+  .dashboard-section {
+    padding: var(--space-xl) 0;
+  }
+  .kpi-card {
+    padding: var(--space-md) var(--space-lg);
+  }
+}

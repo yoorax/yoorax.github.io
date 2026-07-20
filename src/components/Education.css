@@ -169,3 +169,58 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ----- Grouped Certifications ----- */
+.cert-categories-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xl);
+}
+
+.cert-category-group {
+  animation: fadeInUp 0.5s ease forwards;
+}
+
+.cert-category-header {
+  margin-bottom: var(--space-lg);
+  border-left: 3px solid var(--accent);
+  padding-left: var(--space-md);
+}
+
+.cert-category-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.cert-category-desc {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.cert-card-link-wrapper {
+  text-decoration: none;
+  color: inherit;
+}
+
+.cert-header.linkable {
+  cursor: pointer;
+}
+
+.cert-card:hover .cert-title {
+  color: var(--accent);
+}
+
+.cert-external-icon {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-left: 4px;
+  vertical-align: middle;
+  transition: color var(--transition-fast);
+}
+
+.cert-card:hover .cert-external-icon {
+  color: var(--accent);
+}
+
