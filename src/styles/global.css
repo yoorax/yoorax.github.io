@@ -516,10 +516,24 @@ p {
   font-weight: 600;
   color: var(--text-primary);
   max-width: 100%;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  word-wrap: break-word;
+  text-align: center;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  margin-top: 4px;
+}
+
+/* Custom technology images uploaded by the user */
+.tech-custom-icon {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  display: block;
+  transition: transform var(--transition-fast);
+}
+
+.tech-item:hover .tech-custom-icon {
+  transform: scale(1.15);
 }
 

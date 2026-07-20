@@ -233,9 +233,15 @@ function Projects() {
                       <h4 className="modal-section-heading">Softwares &amp; Technologies</h4>
                       <div className="tech-skills-grid">
                         {activeProject.technologies.map((tech, i) => (
-                          <div key={i} className="tech-item" title={tech}>
-                            <div className="tech-icon">{getTechIcon(tech)}</div>
-                            <span className="tech-name">{tech}</span>
+                          <div key={i} className="tech-item" title={tech.name}>
+                            <div className="tech-icon">
+                              {tech.icon ? (
+                                <img src={tech.icon} alt={tech.name} className="tech-custom-icon" />
+                              ) : (
+                                getTechIcon(tech.name)
+                              )}
+                            </div>
+                            <span className="tech-name">{tech.name}</span>
                           </div>
                         ))}
                       </div>

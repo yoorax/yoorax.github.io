@@ -1,11 +1,8 @@
 import React from 'react';
 import { 
-  SiSolidworks, SiArduino, SiPython, SiTensorflow, SiOpencv, SiPowerbi, 
-  SiMicrosoftsqlserver, SiNodered, SiMatlab, SiTableau, SiPostgresql, SiAutocad,
-  SiPandas, SiScikitlearn, SiGithub, SiJupyter, SiAnaconda
-} from 'react-icons/si';
-import { DiGit } from 'react-icons/di';
-import { FiCpu, FiTerminal, FiDatabase, FiSettings } from 'react-icons/fi';
+  FiCpu, FiDatabase, FiTerminal, FiSettings, FiCode, 
+  FiActivity, FiBarChart2, FiGithub, FiVideo, FiLayers 
+} from 'react-icons/fi';
 import { supabase } from '../supabaseClient';
 import projectsBackup from './projects';
 import { academicData as academicBackup, bootcampData as bootcampBackup, certificationData as certsBackup } from './education';
@@ -22,52 +19,77 @@ export const softwareList = [
   'electronics', 'cnn', 'yolov8', 'roboflow', 'arima', 'xgboost', 'random forest'
 ];
 
-// Mapped icons for technologies
+// Mapped stable Feather icons for technologies
 const techIconMap = {
-  'solidworks': <SiSolidworks />,
+  'solidworks': <FiSettings />,
   'catia v5': <FiSettings />,
   'catia': <FiSettings />,
   'fusion 360': <FiSettings />,
-  'matlab': <SiMatlab />,
+  'matlab': <FiTerminal />,
   'simulink': <FiSettings />,
-  'arduino': <SiArduino />,
-  'arduino uno': <SiArduino />,
+  'arduino': <FiCpu />,
+  'arduino uno': <FiCpu />,
   'esp32': <FiCpu />,
-  'python': <SiPython />,
-  'tensorflow': <SiTensorflow />,
-  'opencv': <SiOpencv />,
-  'power bi': <SiPowerbi />,
-  'sql server': <SiMicrosoftsqlserver />,
-  'node-red': <SiNodered />,
-  'postgresql': <SiPostgresql />,
-  'postgres': <SiPostgresql />,
-  'autocad': <SiAutocad />,
-  'git': <DiGit />,
-  'github': <SiGithub />,
-  'pandas': <SiPandas />,
-  'scikit-learn': <SiScikitlearn />,
+  'python': <FiTerminal />,
+  'tensorflow': <FiLayers />,
+  'opencv': <FiVideo />,
+  'power bi': <FiBarChart2 />,
+  'sql server': <FiDatabase />,
+  'node-red': <FiActivity />,
+  'postgresql': <FiDatabase />,
+  'postgres': <FiDatabase />,
+  'autocad': <FiSettings />,
+  'git': <FiGithub />,
+  'github': <FiGithub />,
+  'pandas': <FiCode />,
+  'scikit-learn': <FiCode />,
   'excel vba': <FiDatabase />,
   'vba': <FiDatabase />,
   'c++': <FiTerminal />,
   'g-code': <FiTerminal />,
   'abaqus': <FiSettings />,
   'ansys': <FiSettings />,
-  'tableau': <SiTableau />,
+  'tableau': <FiBarChart2 />,
   'sensors': <FiCpu />,
   'electronics': <FiCpu />,
-  'cnn': <FiCpu />,
-  'yolov8': <FiCpu />,
-  'roboflow': <FiCpu />,
+  'cnn': <FiLayers />,
+  'yolov8': <FiVideo />,
+  'roboflow': <FiVideo />,
   'arima': <FiTerminal />,
-  'xgboost': <FiTerminal />,
-  'random forest': <FiTerminal />
+  'xgboost': <FiCode />,
+  'random forest': <FiCode />
 };
 
-// Helper: Get Icon for Technology name
+// Helper: Get Icon for Technology name (Feather fallback)
 export function getTechIcon(techName) {
   if (!techName) return <FiSettings />;
   const normalized = techName.toLowerCase().trim();
   return techIconMap[normalized] || <FiCpu />;
+}
+
+// Helper: Get technology icons lookup map from Supabase
+export async function getTechnologyIconsMap() {
+  const fallbackIcons = {};
+  if (!supabase) return fallbackIcons;
+  try {
+    const { data, error } = await supabase
+      .from('technology_icons')
+      .select('id, icon_link');
+
+    if (error) throw error;
+
+    const map = {};
+    data.forEach(item => {
+      map[item.id] = item.icon_link;
+    });
+
+    localStorage.setItem('portfolio_tech_icons_map', JSON.stringify(map));
+    return map;
+  } catch (error) {
+    console.error('Error fetching technology icons map:', error);
+    const cached = localStorage.getItem('portfolio_tech_icons_map');
+    return cached ? JSON.parse(cached) : fallbackIcons;
+  }
 }
 
 // Helper: Format YYYY-MM to readable Date "Month Year" (e.g. "2026-01" -> "Jan 2026")
@@ -139,6 +161,13 @@ const fallbackCertCategories = [
 
 // Fetch projects grouped by category
 export async function getProjects() {
+  const mapBackupTechnologies = (tools) => {
+    return (tools || []).map(t => ({
+      name: t,
+      icon: null
+    }));
+  };
+
   if (!supabase) {
     // Process local backup: split tools array into concepts and technologies
     return projectsBackup.map(cat => ({
@@ -150,13 +179,15 @@ export async function getProjects() {
         return {
           ...p,
           concepts,
-          technologies
+          technologies: mapBackupTechnologies(technologies)
         };
       })
     }));
   }
 
   try {
+    const techIconsMap = await getTechnologyIconsMap();
+
     const { data: categories, error: catError } = await supabase
       .from('project_categories')
       .select('id, category_name, category_description, category_icon, display_order')
@@ -177,14 +208,25 @@ export async function getProjects() {
       description: cat.category_description,
       icon: cat.category_icon,
       projects: projects.filter(p => p.category_id === cat.id).map(p => {
-        // Safe check: if tables are not updated yet or columns are empty, fallback to split tools
         let concepts = p.concepts || [];
-        let technologies = p.technologies || [];
-        if (concepts.length === 0 && technologies.length === 0) {
+        let rawTech = p.technologies || [];
+        
+        // Fallback: If concepts and technologies are empty, dynamically split from tools array
+        if (concepts.length === 0 && rawTech.length === 0) {
           const tools = p.tools || [];
-          technologies = tools.filter(t => softwareList.includes(t.toLowerCase().trim()));
+          rawTech = tools.filter(t => softwareList.includes(t.toLowerCase().trim()));
           concepts = tools.filter(t => !softwareList.includes(t.toLowerCase().trim()));
         }
+
+        // Map technologies to their custom WebP icons or fallback using technologies_icons foreign key array
+        const technologies = rawTech.map((techName, idx) => {
+          const iconId = p.technologies_icons && p.technologies_icons[idx];
+          const iconKey = iconId ? iconId.toLowerCase().replace(/\s+/g, '') : techName.toLowerCase().replace(/\s+/g, '');
+          return {
+            name: techName,
+            icon: techIconsMap[iconKey] || null
+          };
+        });
 
         return {
           id: p.id,
@@ -215,7 +257,7 @@ export async function getProjects() {
         return {
           ...p,
           concepts,
-          technologies
+          technologies: mapBackupTechnologies(technologies)
         };
       })
     }));
@@ -224,19 +266,26 @@ export async function getProjects() {
 
 // Fetch all academic, bootcamp, and certification education
 export async function getEducation() {
+  const mapBackupTechnologies = (tools) => {
+    return (tools || []).map(t => ({
+      name: t,
+      icon: null
+    }));
+  };
+
   const processLocalBackup = () => {
     const mappedAcademic = academicBackup.map(edu => {
       const tools = edu.skills || [];
       const technologies = tools.filter(t => softwareList.includes(t.toLowerCase().trim()));
       const concepts = tools.filter(t => !softwareList.includes(t.toLowerCase().trim()));
-      return { ...edu, concepts, technologies };
+      return { ...edu, concepts, technologies: mapBackupTechnologies(technologies) };
     });
 
     const mappedBootcamps = bootcampBackup.map(boot => {
       const tools = boot.skills || [];
       const technologies = tools.filter(t => softwareList.includes(t.toLowerCase().trim()));
       const concepts = tools.filter(t => !softwareList.includes(t.toLowerCase().trim()));
-      return { ...boot, concepts, technologies };
+      return { ...boot, concepts, technologies: mapBackupTechnologies(technologies) };
     });
 
     return { academicData: mappedAcademic, bootcampData: mappedBootcamps, certificationData: fallbackCertCategories };
@@ -245,6 +294,8 @@ export async function getEducation() {
   if (!supabase) return processLocalBackup();
 
   try {
+    const techIconsMap = await getTechnologyIconsMap();
+
     const { data: academic, error: acError } = await supabase
       .from('academic_education')
       .select('*')
@@ -269,12 +320,21 @@ export async function getEducation() {
 
     const mappedAcademic = academic.map(edu => {
       let concepts = edu.concepts || [];
-      let technologies = edu.technologies || [];
-      if (concepts.length === 0 && technologies.length === 0) {
+      let rawTech = edu.technologies || [];
+      if (concepts.length === 0 && rawTech.length === 0) {
         const tools = edu.skills || [];
-        technologies = tools.filter(t => softwareList.includes(t.toLowerCase().trim()));
+        rawTech = tools.filter(t => softwareList.includes(t.toLowerCase().trim()));
         concepts = tools.filter(t => !softwareList.includes(t.toLowerCase().trim()));
       }
+
+      const technologies = rawTech.map((techName, idx) => {
+        const iconId = edu.technologies_icons && edu.technologies_icons[idx];
+        const iconKey = iconId ? iconId.toLowerCase().replace(/\s+/g, '') : techName.toLowerCase().replace(/\s+/g, '');
+        return {
+          name: techName,
+          icon: techIconsMap[iconKey] || null
+        };
+      });
 
       return {
         id: edu.id,
@@ -293,12 +353,21 @@ export async function getEducation() {
 
     const mappedBootcamps = bootcamps.map(boot => {
       let concepts = boot.concepts || [];
-      let technologies = boot.technologies || [];
-      if (concepts.length === 0 && technologies.length === 0) {
+      let rawTech = boot.technologies || [];
+      if (concepts.length === 0 && rawTech.length === 0) {
         const tools = boot.skills || [];
-        technologies = tools.filter(t => softwareList.includes(t.toLowerCase().trim()));
+        rawTech = tools.filter(t => softwareList.includes(t.toLowerCase().trim()));
         concepts = tools.filter(t => !softwareList.includes(t.toLowerCase().trim()));
       }
+
+      const technologies = rawTech.map((techName, idx) => {
+        const iconId = boot.technologies_icons && boot.technologies_icons[idx];
+        const iconKey = iconId ? iconId.toLowerCase().replace(/\s+/g, '') : techName.toLowerCase().replace(/\s+/g, '');
+        return {
+          name: techName,
+          icon: techIconsMap[iconKey] || null
+        };
+      });
 
       return {
         id: boot.id,
