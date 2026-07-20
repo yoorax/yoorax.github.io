@@ -1,8 +1,74 @@
+import React from 'react';
+import { 
+  SiSolidworks, SiArduino, SiPython, SiTensorflow, SiOpencv, SiPowerbi, 
+  SiMicrosoftsqlserver, SiNodered, SiMatlab, SiTableau, SiPostgresql, SiAutocad,
+  SiPandas, SiScikitlearn, SiGithub, SiJupyter, SiAnaconda
+} from 'react-icons/si';
+import { DiGit } from 'react-icons/di';
+import { FiCpu, FiTerminal, FiDatabase, FiSettings } from 'react-icons/fi';
 import { supabase } from '../supabaseClient';
 import projectsBackup from './projects';
 import { academicData as academicBackup, bootcampData as bootcampBackup, certificationData as certsBackup } from './education';
 import experienceBackup from './experience';
 import activitiesBackup from './activities';
+
+// List of softwares and technologies to distinguish from concepts
+export const softwareList = [
+  'solidworks', 'catia v5', 'catia', 'fusion 360', 'matlab', 'simulink', 
+  'arduino', 'arduino uno', 'esp32', 'python', 'tensorflow', 'opencv', 
+  'power bi', 'sql server', 'node-red', 'postgresql', 'postgres', 
+  'autocad', 'git', 'github', 'pandas', 'scikit-learn', 'excel vba', 
+  'vba', 'c++', 'g-code', 'abaqus', 'ansys', 'tableau', 'sensors', 
+  'electronics', 'cnn', 'yolov8', 'roboflow', 'arima', 'xgboost', 'random forest'
+];
+
+// Mapped icons for technologies
+const techIconMap = {
+  'solidworks': <SiSolidworks />,
+  'catia v5': <FiSettings />,
+  'catia': <FiSettings />,
+  'fusion 360': <FiSettings />,
+  'matlab': <SiMatlab />,
+  'simulink': <FiSettings />,
+  'arduino': <SiArduino />,
+  'arduino uno': <SiArduino />,
+  'esp32': <FiCpu />,
+  'python': <SiPython />,
+  'tensorflow': <SiTensorflow />,
+  'opencv': <SiOpencv />,
+  'power bi': <SiPowerbi />,
+  'sql server': <SiMicrosoftsqlserver />,
+  'node-red': <SiNodered />,
+  'postgresql': <SiPostgresql />,
+  'postgres': <SiPostgresql />,
+  'autocad': <SiAutocad />,
+  'git': <DiGit />,
+  'github': <SiGithub />,
+  'pandas': <SiPandas />,
+  'scikit-learn': <SiScikitlearn />,
+  'excel vba': <FiDatabase />,
+  'vba': <FiDatabase />,
+  'c++': <FiTerminal />,
+  'g-code': <FiTerminal />,
+  'abaqus': <FiSettings />,
+  'ansys': <FiSettings />,
+  'tableau': <SiTableau />,
+  'sensors': <FiCpu />,
+  'electronics': <FiCpu />,
+  'cnn': <FiCpu />,
+  'yolov8': <FiCpu />,
+  'roboflow': <FiCpu />,
+  'arima': <FiTerminal />,
+  'xgboost': <FiTerminal />,
+  'random forest': <FiTerminal />
+};
+
+// Helper: Get Icon for Technology name
+export function getTechIcon(techName) {
+  if (!techName) return <FiSettings />;
+  const normalized = techName.toLowerCase().trim();
+  return techIconMap[normalized] || <FiCpu />;
+}
 
 // Helper: Format YYYY-MM to readable Date "Month Year" (e.g. "2026-01" -> "Jan 2026")
 export function formatMonthYear(dateStr) {
@@ -73,7 +139,23 @@ const fallbackCertCategories = [
 
 // Fetch projects grouped by category
 export async function getProjects() {
-  if (!supabase) return projectsBackup;
+  if (!supabase) {
+    // Process local backup: split tools array into concepts and technologies
+    return projectsBackup.map(cat => ({
+      ...cat,
+      projects: cat.projects.map(p => {
+        const tools = p.tools || [];
+        const technologies = tools.filter(t => softwareList.includes(t.toLowerCase().trim()));
+        const concepts = tools.filter(t => !softwareList.includes(t.toLowerCase().trim()));
+        return {
+          ...p,
+          concepts,
+          technologies
+        };
+      })
+    }));
+  }
+
   try {
     const { data: categories, error: catError } = await supabase
       .from('project_categories')
@@ -94,17 +176,29 @@ export async function getProjects() {
       category: cat.category_name,
       description: cat.category_description,
       icon: cat.category_icon,
-      projects: projects.filter(p => p.category_id === cat.id).map(p => ({
-        id: p.id,
-        name: p.name,
-        brief_description: p.brief_description,
-        description: p.description,
-        tools: p.tools || [],
-        category: p.project_category,
-        thumbnail: p.thumbnail,
-        project_link: p.project_link,
-        link_name: p.link_name
-      }))
+      projects: projects.filter(p => p.category_id === cat.id).map(p => {
+        // Safe check: if tables are not updated yet or columns are empty, fallback to split tools
+        let concepts = p.concepts || [];
+        let technologies = p.technologies || [];
+        if (concepts.length === 0 && technologies.length === 0) {
+          const tools = p.tools || [];
+          technologies = tools.filter(t => softwareList.includes(t.toLowerCase().trim()));
+          concepts = tools.filter(t => !softwareList.includes(t.toLowerCase().trim()));
+        }
+
+        return {
+          id: p.id,
+          name: p.name,
+          brief_description: p.brief_description,
+          description: p.description,
+          concepts,
+          technologies,
+          category: p.project_category,
+          thumbnail: p.thumbnail,
+          project_link: p.project_link,
+          link_name: p.link_name
+        };
+      })
     }));
 
     localStorage.setItem('portfolio_projects', JSON.stringify(structuredData));
@@ -112,13 +206,44 @@ export async function getProjects() {
   } catch (error) {
     console.error('Error fetching projects from Supabase:', error);
     const cached = localStorage.getItem('portfolio_projects');
-    return cached ? JSON.parse(cached) : projectsBackup;
+    return cached ? JSON.parse(cached) : projectsBackup.map(cat => ({
+      ...cat,
+      projects: cat.projects.map(p => {
+        const tools = p.tools || [];
+        const technologies = tools.filter(t => softwareList.includes(t.toLowerCase().trim()));
+        const concepts = tools.filter(t => !softwareList.includes(t.toLowerCase().trim()));
+        return {
+          ...p,
+          concepts,
+          technologies
+        };
+      })
+    }));
   }
 }
 
 // Fetch all academic, bootcamp, and certification education
 export async function getEducation() {
-  if (!supabase) return { academicData: academicBackup, bootcampData: bootcampBackup, certificationData: fallbackCertCategories };
+  const processLocalBackup = () => {
+    const mappedAcademic = academicBackup.map(edu => {
+      const tools = edu.skills || [];
+      const technologies = tools.filter(t => softwareList.includes(t.toLowerCase().trim()));
+      const concepts = tools.filter(t => !softwareList.includes(t.toLowerCase().trim()));
+      return { ...edu, concepts, technologies };
+    });
+
+    const mappedBootcamps = bootcampBackup.map(boot => {
+      const tools = boot.skills || [];
+      const technologies = tools.filter(t => softwareList.includes(t.toLowerCase().trim()));
+      const concepts = tools.filter(t => !softwareList.includes(t.toLowerCase().trim()));
+      return { ...boot, concepts, technologies };
+    });
+
+    return { academicData: mappedAcademic, bootcampData: mappedBootcamps, certificationData: fallbackCertCategories };
+  };
+
+  if (!supabase) return processLocalBackup();
+
   try {
     const { data: academic, error: acError } = await supabase
       .from('academic_education')
@@ -142,30 +267,51 @@ export async function getEducation() {
 
     if (acError || btError || ccError || certError) throw new Error('Error fetching education data');
 
-    // Map split columns to old properties for seamless component integration
-    const mappedAcademic = academic.map(edu => ({
-      id: edu.id,
-      level: edu.level,
-      speciality: edu.speciality,
-      department: edu.department,
-      school: edu.school,
-      university: edu.university,
-      location: `${edu.location_city}, ${edu.location_country}`,
-      period: formatDateRange(edu.start_date, edu.end_date),
-      description: edu.description,
-      skills: edu.skills || []
-    }));
+    const mappedAcademic = academic.map(edu => {
+      let concepts = edu.concepts || [];
+      let technologies = edu.technologies || [];
+      if (concepts.length === 0 && technologies.length === 0) {
+        const tools = edu.skills || [];
+        technologies = tools.filter(t => softwareList.includes(t.toLowerCase().trim()));
+        concepts = tools.filter(t => !softwareList.includes(t.toLowerCase().trim()));
+      }
 
-    const mappedBootcamps = bootcamps.map(boot => ({
-      id: boot.id,
-      title: boot.title,
-      format: boot.format,
-      location: boot.site_name ? `${boot.site_name}, ${boot.location_city}, ${boot.location_country}` : `${boot.location_city}, ${boot.location_country}`,
-      operator: boot.operator,
-      period: formatDateRange(boot.start_date, boot.end_date),
-      description: boot.description,
-      skills: boot.skills || []
-    }));
+      return {
+        id: edu.id,
+        level: edu.level,
+        speciality: edu.speciality,
+        department: edu.department,
+        school: edu.school,
+        university: edu.university,
+        location: `${edu.location_city}, ${edu.location_country}`,
+        period: formatDateRange(edu.start_date, edu.end_date),
+        description: edu.description,
+        concepts,
+        technologies
+      };
+    });
+
+    const mappedBootcamps = bootcamps.map(boot => {
+      let concepts = boot.concepts || [];
+      let technologies = boot.technologies || [];
+      if (concepts.length === 0 && technologies.length === 0) {
+        const tools = boot.skills || [];
+        technologies = tools.filter(t => softwareList.includes(t.toLowerCase().trim()));
+        concepts = tools.filter(t => !softwareList.includes(t.toLowerCase().trim()));
+      }
+
+      return {
+        id: boot.id,
+        title: boot.title,
+        format: boot.format,
+        location: boot.site_name ? `${boot.site_name}, ${boot.location_city}, ${boot.location_country}` : `${boot.location_city}, ${boot.location_country}`,
+        operator: boot.operator,
+        period: formatDateRange(boot.start_date, boot.end_date),
+        description: boot.description,
+        concepts,
+        technologies
+      };
+    });
 
     // Group certifications by category
     const groupedCertifications = certCategories.map(cat => ({
@@ -192,9 +338,10 @@ export async function getEducation() {
   } catch (error) {
     console.error('Error fetching education from Supabase:', error);
     const cached = localStorage.getItem('portfolio_education');
-    return cached ? JSON.parse(cached) : { academicData: academicBackup, bootcampData: bootcampBackup, certificationData: fallbackCertCategories };
+    return cached ? JSON.parse(cached) : processLocalBackup();
   }
 }
+
 // Fetch professional experiences
 export async function getExperience() {
   const fallbackExperienceDurations = {

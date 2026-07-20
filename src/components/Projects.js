@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { FiSearch, FiChevronDown, FiCpu, FiSettings, FiBarChart2, FiPenTool, FiExternalLink } from 'react-icons/fi';
-import { getProjects } from '../data/supabaseLoader';
+import { getProjects, getTechIcon } from '../data/supabaseLoader';
 import './Projects.css';
 
 const categoryIcons = {
@@ -214,13 +214,33 @@ function Projects() {
 
                 <div className="modal-divider"></div>
 
-                <div className="modal-tags-section">
-                  <h4 className="modal-section-heading">Tools & Technologies</h4>
-                  <div className="skill-tags modal-tags">
-                    {activeProject.tools.map((tool, i) => (
-                      <span key={i} className="skill-tag">{tool}</span>
-                    ))}
-                  </div>
+                 <div className="modal-skills-wrapper">
+                  {/* Subsection 1: Concepts */}
+                  {activeProject.concepts && activeProject.concepts.length > 0 && (
+                    <div className="modal-skills-group">
+                      <h4 className="modal-section-heading">Learning Concepts</h4>
+                      <div className="skill-tags">
+                        {activeProject.concepts.map((concept, i) => (
+                          <span key={i} className="skill-tag concept-tag">{concept}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Subsection 2: Softwares & Technologies */}
+                  {activeProject.technologies && activeProject.technologies.length > 0 && (
+                    <div className="modal-skills-group" style={{ marginTop: '1.5rem' }}>
+                      <h4 className="modal-section-heading">Softwares &amp; Technologies</h4>
+                      <div className="tech-skills-grid">
+                        {activeProject.technologies.map((tech, i) => (
+                          <div key={i} className="tech-item" title={tech}>
+                            <div className="tech-icon">{getTechIcon(tech)}</div>
+                            <span className="tech-name">{tech}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {activeProject.project_link && (

@@ -452,3 +452,74 @@ p {
     font-size: 1rem;
   }
 }
+
+/* ===================================================
+   Dynamic Concept vs Software Skills Layout
+   =================================================== */
+
+/* Concept Tag Distinction */
+.skill-tag.concept-tag {
+  background: rgba(0, 188, 212, 0.1);
+  color: #00bcd4;
+  border: 1px solid rgba(0, 188, 212, 0.2);
+}
+.skill-tag.concept-tag:hover {
+  background: #00bcd4;
+  color: var(--bg-primary);
+}
+
+/* Technology Grid & Icons */
+.tech-skills-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: var(--space-md);
+  margin-top: var(--space-sm);
+}
+
+.tech-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  padding: var(--space-sm);
+  border-radius: var(--radius-sm);
+  aspect-ratio: 1 / 1;
+  text-align: center;
+  transition: all var(--transition-fast);
+  cursor: default;
+}
+
+.tech-item:hover {
+  border-color: var(--accent);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-accent);
+}
+
+.tech-icon {
+  font-size: 1.8rem;
+  color: var(--accent);
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform var(--transition-fast);
+}
+
+.tech-item:hover .tech-icon {
+  transform: scale(1.15);
+}
+
+.tech-name {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+

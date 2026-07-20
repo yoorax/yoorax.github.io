@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FiChevronDown, FiBook, FiAward, FiCode, FiMapPin, FiCalendar, FiExternalLink } from 'react-icons/fi';
 import { HiOutlineAcademicCap } from 'react-icons/hi';
-import { getEducation } from '../data/supabaseLoader';
+import { getEducation, getTechIcon } from '../data/supabaseLoader';
 import './Education.css';
 
 function Education() {
@@ -104,14 +104,33 @@ function Education() {
                         <p>{edu.description}</p>
                       </div>
 
-                      {/* Skills */}
-                      <div className="edu-skills">
-                        <h4 className="edu-section-heading">Skills Gained</h4>
-                        <div className="skill-tags">
-                          {edu.skills && edu.skills.map((skill, i) => (
-                            <span key={i} className="skill-tag">{skill}</span>
-                          ))}
-                        </div>
+                      <div className="edu-skills-wrapper">
+                        {/* Subsection 1: Concepts */}
+                        {edu.concepts && edu.concepts.length > 0 && (
+                          <div className="edu-skills-group" style={{ marginBottom: '1.5rem' }}>
+                            <h4 className="edu-section-heading">Learning Concepts</h4>
+                            <div className="skill-tags">
+                              {edu.concepts.map((concept, i) => (
+                                <span key={i} className="skill-tag concept-tag">{concept}</span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Subsection 2: Softwares & Technologies */}
+                        {edu.technologies && edu.technologies.length > 0 && (
+                          <div className="edu-skills-group">
+                            <h4 className="edu-section-heading">Softwares &amp; Technologies</h4>
+                            <div className="tech-skills-grid">
+                              {edu.technologies.map((tech, i) => (
+                                <div key={i} className="tech-item" title={tech}>
+                                  <div className="tech-icon">{getTechIcon(tech)}</div>
+                                  <span className="tech-name">{tech}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -177,13 +196,33 @@ function Education() {
                         <p>{boot.description}</p>
                       </div>
 
-                      <div className="edu-skills">
-                        <h4 className="edu-section-heading">Skills Gained</h4>
-                        <div className="skill-tags">
-                          {boot.skills && boot.skills.map((skill, i) => (
-                            <span key={i} className="skill-tag">{skill}</span>
-                          ))}
-                        </div>
+                      <div className="edu-skills-wrapper">
+                        {/* Subsection 1: Concepts */}
+                        {boot.concepts && boot.concepts.length > 0 && (
+                          <div className="edu-skills-group" style={{ marginBottom: '1.5rem' }}>
+                            <h4 className="edu-section-heading">Learning Concepts</h4>
+                            <div className="skill-tags">
+                              {boot.concepts.map((concept, i) => (
+                                <span key={i} className="skill-tag concept-tag">{concept}</span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Subsection 2: Softwares & Technologies */}
+                        {boot.technologies && boot.technologies.length > 0 && (
+                          <div className="edu-skills-group">
+                            <h4 className="edu-section-heading">Softwares &amp; Technologies</h4>
+                            <div className="tech-skills-grid">
+                              {boot.technologies.map((tech, i) => (
+                                <div key={i} className="tech-item" title={tech}>
+                                  <div className="tech-icon">{getTechIcon(tech)}</div>
+                                  <span className="tech-name">{tech}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
