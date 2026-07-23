@@ -584,10 +584,16 @@ export async function getMarqueeSkills() {
 
     if (filtered.length === 0) return fallbackSkills;
 
-    return filtered.map(item => ({
-      name: item.software_name,
-      logo: item.icon_link
-    }));
+    return filtered.map(item => {
+      let logoUrl = item.icon_link;
+      if (logoUrl && logoUrl.includes('/technologies/') && !logoUrl.includes('/technologies_icons/')) {
+        logoUrl = logoUrl.replace('/technologies/', '/technologies_icons/');
+      }
+      return {
+        name: item.software_name,
+        logo: logoUrl
+      };
+    });
   } catch (error) {
     console.error('Error fetching marquee skills:', error);
     return fallbackSkills;
