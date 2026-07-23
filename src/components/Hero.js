@@ -148,6 +148,7 @@ function Hero() {
                   </div>
                 ))}
               </div>
+              <div className="intersection-shadow"></div>
             </div>
 
             {/* Pistachio Strip: Logos (Moving Right to Left / scroll-left) */}

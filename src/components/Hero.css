@@ -298,7 +298,7 @@
   display: flex;
   align-items: center;
   overflow: hidden;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+  box-shadow: none; /* Removed outer shadow on background */
 }
 
 .pink-strip {
@@ -308,13 +308,25 @@
   left: 50%;
 }
 
+.pink-strip .intersection-shadow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(16deg); /* Aligns with pistachio strip's page rotation */
+  width: 62px; /* Same width as pistachio strip */
+  height: 150px; /* Spans top-to-bottom across pink strip */
+  background: transparent;
+  box-shadow: 0 0 12px 6px rgba(0, 0, 0, 0.45); /* Soft, faint dark shadow */
+  pointer-events: none;
+  z-index: 10;
+}
+
 .pistachio-strip {
   background: #d4ff3a;
   transform: translate(-50%, -50%) rotate(8deg);
   top: 50%;
   left: 50%;
-  /* Strong, layered dark shadow casting on top of the pink strip for an obvious 3D overlap effect */
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.9), 0 5px 12px rgba(0, 0, 0, 0.6);
+  box-shadow: none; /* Removed outer shadow on background */
 }
 
 .strip-track {
