@@ -68,9 +68,6 @@ function DashboardKPI() {
       <div className="container">
         <div className="dashboard-header animate-in">
           <h3 className="dashboard-title">Live Portfolio Dashboard</h3>
-          <p className="dashboard-subtitle">
-            Real-time analytics and key performance indicators dynamically calculated from my CMS.
-          </p>
         </div>
 
         {loading ? (

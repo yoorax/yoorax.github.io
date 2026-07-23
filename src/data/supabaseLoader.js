@@ -526,7 +526,8 @@ export async function getContactSettings() {
     instagram: 'https://instagram.com/yoorachid',
     reddit: 'https://reddit.com',
     medium: 'https://medium.com/@rachidkherbech',
-    location: 'Agadir, Morocco'
+    location: 'Agadir, Morocco',
+    resume_url: process.env.REACT_APP_RESUME_URL || 'https://awcaqmdzyhrcnlytjcec.supabase.co/storage/v1/object/public/portfolio-assets/home_page/resumes/BI_and_Data_Analytics_Engineer.pdf'
   };
 
   if (!supabase) return fallbackContacts;
@@ -552,3 +553,44 @@ export async function getContactSettings() {
     return cached ? JSON.parse(cached) : fallbackContacts;
   }
 }
+
+// Fetch skills to be displayed in the infinite marquee
+export async function getMarqueeSkills() {
+  const fallbackSkills = [
+    { name: 'SolidWorks', logo: 'https://awcaqmdzyhrcnlytjcec.supabase.co/storage/v1/object/public/portfolio-assets/technologies/solidworks.webp' },
+    { name: 'CATIA V5', logo: 'https://awcaqmdzyhrcnlytjcec.supabase.co/storage/v1/object/public/portfolio-assets/technologies/catia.webp' },
+    { name: 'Python', logo: 'https://awcaqmdzyhrcnlytjcec.supabase.co/storage/v1/object/public/portfolio-assets/technologies/python.webp' },
+    { name: 'Power BI', logo: 'https://awcaqmdzyhrcnlytjcec.supabase.co/storage/v1/object/public/portfolio-assets/technologies_icons/power_bi.webp' },
+    { name: 'MATLAB', logo: 'https://awcaqmdzyhrcnlytjcec.supabase.co/storage/v1/object/public/portfolio-assets/technologies/matlab.webp' },
+    { name: 'Simulink', logo: 'https://awcaqmdzyhrcnlytjcec.supabase.co/storage/v1/object/public/portfolio-assets/technologies/simulink.webp' },
+    { name: 'Fusion 360', logo: 'https://awcaqmdzyhrcnlytjcec.supabase.co/storage/v1/object/public/portfolio-assets/technologies/fusion360.webp' }
+  ];
+
+  if (!supabase) return fallbackSkills;
+
+  try {
+    const { data, error } = await supabase
+      .from('technology_icons')
+      .select('*');
+
+    if (error) throw error;
+
+    const filtered = data.filter(item => {
+      if (item.hasOwnProperty('displayed_infinite_marquee')) {
+        return item.displayed_infinite_marquee === true;
+      }
+      return item.displayed_in_infinite_marquee === true;
+    });
+
+    if (filtered.length === 0) return fallbackSkills;
+
+    return filtered.map(item => ({
+      name: item.software_name,
+      logo: item.icon_link
+    }));
+  } catch (error) {
+    console.error('Error fetching marquee skills:', error);
+    return fallbackSkills;
+  }
+}
+

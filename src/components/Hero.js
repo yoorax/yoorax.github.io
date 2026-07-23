@@ -5,7 +5,7 @@ import { FaWhatsapp } from 'react-icons/fa';
 import { HiOutlineLightningBolt, HiOutlineGlobeAlt, HiOutlineChip } from 'react-icons/hi';
 import SkillMap from './SkillMap';
 import DashboardKPI from './DashboardKPI';
-import { getContactSettings } from '../data/supabaseLoader';
+import { getContactSettings, getMarqueeSkills } from '../data/supabaseLoader';
 import './Hero.css';
 
 function Hero() {
@@ -18,11 +18,14 @@ function Hero() {
     instagram: 'https://instagram.com/yoorachid',
     reddit: 'https://reddit.com',
     medium: 'https://medium.com/@rachidkherbech',
-    location: 'Agadir, Morocco'
+    location: 'Agadir, Morocco',
+    resume_url: 'https://awcaqmdzyhrcnlytjcec.supabase.co/storage/v1/object/public/portfolio-assets/home_page/resumes/BI_and_Data_Analytics_Engineer.pdf'
   });
+  const [marqueeSkills, setMarqueeSkills] = useState([]);
 
   useEffect(() => {
     getContactSettings().then(data => setContacts(data));
+    getMarqueeSkills().then(data => setMarqueeSkills(data));
   }, []);
 
   return (
@@ -46,10 +49,33 @@ function Hero() {
 
             {/* CTA Buttons */}
             <div className="hero-cta">
-              <Link to="/projects" className="btn btn-primary" id="cta-projects">
-                View My Projects <FiArrowRight />
-              </Link>
-              <a href={`mailto:${contacts.email}`} className="btn btn-outline" id="cta-connect">
+              <a 
+                href={contacts.resume_url || 'https://awcaqmdzyhrcnlytjcec.supabase.co/storage/v1/object/public/portfolio-assets/home_page/resumes/BI_and_Data_Analytics_Engineer.pdf'}
+                onClick={async (e) => {
+                  e.preventDefault();
+                  const resumeUrl = contacts.resume_url || 'https://awcaqmdzyhrcnlytjcec.supabase.co/storage/v1/object/public/portfolio-assets/home_page/resumes/BI_and_Data_Analytics_Engineer.pdf';
+                  window.open(resumeUrl, '_blank');
+                  try {
+                    const response = await fetch(resumeUrl);
+                    const blob = await response.blob();
+                    const blobUrl = window.URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = blobUrl;
+                    link.setAttribute('download', 'BI_and_Data_Analytics_Engineer.pdf');
+                    document.body.appendChild(link);
+                    link.click();
+                    link.remove();
+                    window.URL.revokeObjectURL(blobUrl);
+                  } catch (err) {
+                    console.error('Error triggering automatic download:', err);
+                  }
+                }}
+                className="btn btn-primary" 
+                id="cta-resume"
+              >
+                View My Resume <FiArrowRight />
+              </a>
+              <a href={`mailto:${contacts.email || 'rachidkherbech@gmail.com'}`} className="btn btn-outline" id="cta-connect">
                 Let's Connect <FiMail />
               </a>
             </div>
@@ -84,6 +110,7 @@ function Hero() {
 
           {/* Right: Illustration */}
           <div className="hero-photo-wrapper animate-in animate-in-delay-2">
+
             <div className="hero-photo-glow"></div>
             <img
               src="/portfolio_image_illustration.webp"
@@ -99,6 +126,53 @@ function Hero() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* ---- Crossed Marquee Section (Between Banner and Dashboard) ---- */}
+      <div className="hero-divider-marquee-wrapper">
+        {marqueeSkills.length > 0 && (
+          <div className="hero-crossed-marquee">
+            {/* Pink Strip: Names (Moving Right to Left / scroll-left) */}
+            <div className="marquee-strip pink-strip">
+              <div className="strip-track track-left">
+                {[
+                  ...marqueeSkills,
+                  ...marqueeSkills,
+                  ...marqueeSkills,
+                  ...marqueeSkills,
+                  ...marqueeSkills,
+                  ...marqueeSkills
+                ].map((skill, index) => (
+                  <div key={`name-${index}`} className="marquee-item-name">
+                    {skill.name.toUpperCase()}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Pistachio Strip: Logos (Moving Right to Left / scroll-left) */}
+            <div className="marquee-strip pistachio-strip">
+              <div className="strip-track track-left">
+                {[
+                  ...marqueeSkills,
+                  ...marqueeSkills,
+                  ...marqueeSkills,
+                  ...marqueeSkills,
+                  ...marqueeSkills,
+                  ...marqueeSkills
+                ].map((skill, index) => (
+                  <div key={`logo-${index}`} className="marquee-item-logo">
+                    {skill.logo ? (
+                      <img src={skill.logo} alt={skill.name} className="marquee-logo-img" />
+                    ) : (
+                      <span className="marquee-logo-placeholder">{skill.name}</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ---- Dashboard KPI Section ---- */}
@@ -145,16 +219,6 @@ function Hero() {
         </div>
       </div>
 
-      {/* ---- Skills Marquee ---- */}
-      <div className="hero-skills-strip">
-        <div className="marquee">
-          <div className="marquee-content">
-            {['SolidWorks', 'CATIA V5', 'Python', 'TIA Portal', 'SQL Server', 'Power BI', 'MATLAB', 'Node-RED', 'OpenCV', 'YOLOv8', 'Fusion 360', 'Arduino', 'ROS 2', 'Excel VBA', 'Scikit-learn', 'Git', 'SolidWorks', 'CATIA V5', 'Python', 'TIA Portal', 'SQL Server', 'Power BI', 'MATLAB', 'Node-RED', 'OpenCV', 'YOLOv8', 'Fusion 360', 'Arduino', 'ROS 2', 'Excel VBA', 'Scikit-learn', 'Git'].map((skill, i) => (
-              <span key={i} className="marquee-item">{skill}</span>
-            ))}
-          </div>
-        </div>
-      </div>
     </section>
   );
 }
