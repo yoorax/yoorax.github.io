@@ -308,25 +308,12 @@
   left: 50%;
 }
 
-.pink-strip .intersection-shadow {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%) rotate(16deg); /* Aligns with pistachio strip's page rotation */
-  width: 62px; /* Same width as pistachio strip */
-  height: 150px; /* Spans top-to-bottom across pink strip */
-  background: transparent;
-  box-shadow: 0 0 12px 6px rgba(0, 0, 0, 0.45); /* Soft, faint dark shadow */
-  pointer-events: none;
-  z-index: 10;
-}
-
 .pistachio-strip {
   background: #d4ff3a;
   transform: translate(-50%, -50%) rotate(8deg);
   top: 50%;
   left: 50%;
-  box-shadow: none; /* Removed outer shadow on background */
+  box-shadow: none; /* No outer shadow on background */
 }
 
 .strip-track {

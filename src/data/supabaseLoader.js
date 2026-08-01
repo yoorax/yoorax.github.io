@@ -92,6 +92,39 @@ export async function getTechnologyIconsMap() {
   }
 }
 
+// Helper: Get detailed technology icons map (id -> { name, icon })
+export async function getTechnologyDetailsMap() {
+  const fallbackDetails = {};
+  if (!supabase) return fallbackDetails;
+  try {
+    const { data, error } = await supabase
+      .from('technology_icons')
+      .select('id, software_name, icon_link');
+
+    if (error) throw error;
+
+    const map = {};
+    data.forEach(item => {
+      let logoUrl = item.icon_link;
+      // Dynamic rewrite fallback for legacy paths
+      if (logoUrl && logoUrl.includes('/technologies/') && !logoUrl.includes('/technologies_icons/')) {
+        logoUrl = logoUrl.replace('/technologies/', '/technologies_icons/');
+      }
+      map[item.id] = {
+        name: item.software_name,
+        icon: logoUrl
+      };
+    });
+
+    localStorage.setItem('portfolio_tech_details_map', JSON.stringify(map));
+    return map;
+  } catch (error) {
+    console.error('Error fetching technology details map:', error);
+    const cached = localStorage.getItem('portfolio_tech_details_map');
+    return cached ? JSON.parse(cached) : fallbackDetails;
+  }
+}
+
 // Helper: Format YYYY-MM to readable Date "Month Year" (e.g. "2026-01" -> "Jan 2026")
 export function formatMonthYear(dateStr) {
   if (!dateStr) return 'Present';
@@ -294,7 +327,7 @@ export async function getEducation() {
   if (!supabase) return processLocalBackup();
 
   try {
-    const techIconsMap = await getTechnologyIconsMap();
+    const techDetailsMap = await getTechnologyDetailsMap();
 
     const { data: academic, error: acError } = await supabase
       .from('academic_education')
@@ -318,6 +351,45 @@ export async function getEducation() {
 
     if (acError || btError || ccError || certError) throw new Error('Error fetching education data');
 
+    const resolveTech = (rawTech) => {
+      return (rawTech || []).map(val => {
+        const normalizedVal = val.toLowerCase().trim();
+        // 1. Direct lookup by key
+        if (techDetailsMap[normalizedVal]) {
+          return {
+            name: techDetailsMap[normalizedVal].name,
+            icon: techDetailsMap[normalizedVal].icon
+          };
+        }
+        // 2. Case-insensitive lookup of id or replace spaces
+        const matchById = Object.keys(techDetailsMap).find(id => 
+          id.toLowerCase() === normalizedVal || 
+          id.toLowerCase().replace(/\s+/g, '') === normalizedVal.replace(/\s+/g, '')
+        );
+        if (matchById) {
+          return {
+            name: techDetailsMap[matchById].name,
+            icon: techDetailsMap[matchById].icon
+          };
+        }
+        // 3. Match by name
+        const matchByName = Object.keys(techDetailsMap).find(id => 
+          techDetailsMap[id].name.toLowerCase().trim() === normalizedVal
+        );
+        if (matchByName) {
+          return {
+            name: techDetailsMap[matchByName].name,
+            icon: techDetailsMap[matchByName].icon
+          };
+        }
+        // Fallback
+        return {
+          name: val,
+          icon: null
+        };
+      });
+    };
+
     const mappedAcademic = academic.map(edu => {
       let concepts = edu.concepts || [];
       let rawTech = edu.technologies || [];
@@ -326,15 +398,6 @@ export async function getEducation() {
         rawTech = tools.filter(t => softwareList.includes(t.toLowerCase().trim()));
         concepts = tools.filter(t => !softwareList.includes(t.toLowerCase().trim()));
       }
-
-      const technologies = rawTech.map((techName, idx) => {
-        const iconId = edu.technologies_icons && edu.technologies_icons[idx];
-        const iconKey = iconId ? iconId.toLowerCase().replace(/\s+/g, '') : techName.toLowerCase().replace(/\s+/g, '');
-        return {
-          name: techName,
-          icon: techIconsMap[iconKey] || null
-        };
-      });
 
       return {
         id: edu.id,
@@ -347,7 +410,7 @@ export async function getEducation() {
         period: formatDateRange(edu.start_date, edu.end_date),
         description: edu.description,
         concepts,
-        technologies
+        technologies: resolveTech(rawTech)
       };
     });
 
@@ -360,15 +423,6 @@ export async function getEducation() {
         concepts = tools.filter(t => !softwareList.includes(t.toLowerCase().trim()));
       }
 
-      const technologies = rawTech.map((techName, idx) => {
-        const iconId = boot.technologies_icons && boot.technologies_icons[idx];
-        const iconKey = iconId ? iconId.toLowerCase().replace(/\s+/g, '') : techName.toLowerCase().replace(/\s+/g, '');
-        return {
-          name: techName,
-          icon: techIconsMap[iconKey] || null
-        };
-      });
-
       return {
         id: boot.id,
         title: boot.title,
@@ -378,7 +432,7 @@ export async function getEducation() {
         period: formatDateRange(boot.start_date, boot.end_date),
         description: boot.description,
         concepts,
-        technologies
+        technologies: resolveTech(rawTech)
       };
     });
 
@@ -419,14 +473,25 @@ export async function getExperience() {
     'local-workshop': 3
   };
 
+  const mapBackupTechnologies = (tools) => {
+    return (tools || []).map(t => ({
+      name: t,
+      icon: null
+    }));
+  };
+
   if (!supabase) {
     return experienceBackup.map(exp => ({
       ...exp,
-      durationMonths: fallbackExperienceDurations[exp.id] || 0
+      durationMonths: fallbackExperienceDurations[exp.id] || 0,
+      technologies: mapBackupTechnologies(exp.skills),
+      whatLearned: []
     }));
   }
 
   try {
+    const techDetailsMap = await getTechnologyDetailsMap();
+
     const { data, error } = await supabase
       .from('experiences')
       .select('*')
@@ -453,6 +518,18 @@ export async function getExperience() {
         months = (eYear - sYear) * 12 + (eMonth - sMonth) + 1;
       }
 
+      // Map technologies array containing IDs from technology_icons table
+      let techList = [];
+      if (exp.technologies && Array.isArray(exp.technologies)) {
+        techList = exp.technologies.map(id => {
+          const detail = techDetailsMap[id];
+          return {
+            name: detail ? detail.name : id,
+            icon: detail ? detail.icon : null
+          };
+        });
+      }
+
       return {
         id: exp.id,
         title: exp.title,
@@ -467,7 +544,9 @@ export async function getExperience() {
         durationMonths: months,
         description: exp.description,
         responsibilities: exp.responsibilities || [],
-        skills: exp.skills || []
+        skills: exp.skills || [],
+        technologies: techList,
+        whatLearned: exp.what_learned || exp.learned || exp.what_ive_learned || []
       };
     });
 
@@ -479,7 +558,9 @@ export async function getExperience() {
     if (cached) return JSON.parse(cached);
     return experienceBackup.map(exp => ({
       ...exp,
-      durationMonths: fallbackExperienceDurations[exp.id] || 0
+      durationMonths: fallbackExperienceDurations[exp.id] || 0,
+      technologies: mapBackupTechnologies(exp.skills),
+      whatLearned: []
     }));
   }
 }

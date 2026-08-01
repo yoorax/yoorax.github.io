@@ -89,6 +89,11 @@
   margin-bottom: var(--space-xl);
 }
 
+/* ----- Learnings Section ----- */
+.exp-learnings {
+  margin-bottom: var(--space-xl);
+}
+
 .exp-list {
   display: flex;
   flex-direction: column;

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FiChevronDown, FiMapPin, FiCalendar, FiBriefcase, FiMonitor } from 'react-icons/fi';
-import { getExperience } from '../data/supabaseLoader';
+import { getExperience, getTechIcon } from '../data/supabaseLoader';
 import './Experience.css';
 
 function Experience() {
@@ -94,15 +94,45 @@ function Experience() {
                     </ul>
                   </div>
 
-                  {/* Skills */}
-                  <div className="exp-skills">
-                    <h4 className="exp-section-heading">Tools & Technologies</h4>
-                    <div className="skill-tags">
-                      {exp.skills && exp.skills.map((skill, i) => (
-                        <span key={i} className="skill-tag">{skill}</span>
-                      ))}
+                  {/* What I've learned from this experience */}
+                  {exp.whatLearned && (Array.isArray(exp.whatLearned) ? exp.whatLearned.length > 0 : exp.whatLearned) && (
+                    <div className="exp-learnings">
+                      <h4 className="exp-section-heading">What I've learned from this experience?</h4>
+                      {Array.isArray(exp.whatLearned) ? (
+                        <ul className="exp-list">
+                          {exp.whatLearned.map((item, i) => (
+                            <li key={i} className="exp-list-item">
+                              <span className="exp-bullet"></span>
+                              {item}
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="exp-description">{exp.whatLearned}</p>
+                      )}
                     </div>
-                  </div>
+                  )}
+
+                  {/* Tools & Technologies */}
+                  {exp.technologies && exp.technologies.length > 0 && (
+                    <div className="exp-skills">
+                      <h4 className="exp-section-heading">Tools & Technologies</h4>
+                      <div className="tech-skills-grid">
+                        {exp.technologies.map((tech, i) => (
+                          <div key={i} className="tech-item" title={tech.name}>
+                            <div className="tech-icon">
+                              {tech.icon ? (
+                                <img src={tech.icon} alt={tech.name} className="tech-custom-icon" />
+                              ) : (
+                                getTechIcon(tech.name)
+                              )}
+                            </div>
+                            <span className="tech-name">{tech.name}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}

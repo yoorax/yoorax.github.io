@@ -482,20 +482,14 @@ p {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
   padding: var(--space-sm);
-  border-radius: var(--radius-sm);
-  aspect-ratio: 1 / 1;
   text-align: center;
   transition: all var(--transition-fast);
   cursor: default;
 }
 
 .tech-item:hover {
-  border-color: var(--accent);
   transform: translateY(-3px);
-  box-shadow: var(--shadow-accent);
 }
 
 .tech-icon {
